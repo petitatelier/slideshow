@@ -1,6 +1,17 @@
-import { LitElement, html, css } from "lit-element";
+import { LitElement, html } from "lit-element";
+import { CommonStyles, DiaSpeakerStyles } from "./shared-styles.js";
 
 export class DiaSpeaker extends LitElement {
+  static get styles() {
+    return [ CommonStyles, DiaSpeakerStyles ];
+  };
+
+  render() {
+    return html`
+      <div>‹dia-speaker›</div>
+      <slot></slot>
+    `;
+  }
 
 }
 
