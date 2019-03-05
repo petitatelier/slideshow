@@ -9,6 +9,8 @@ export class DiaSlide extends LitElement {
   static get properties() {
     return {
       id: { type: String },
+      activeSlide: { type: String, attribute: false },
+      activeDisplay: { type: String, attribute: false },
       hidden: { type: Boolean, reflect: true }
     }
   }
@@ -20,10 +22,29 @@ export class DiaSlide extends LitElement {
     `;
   }
 
+  constructor() {
+    super();
+    this.id = undefined;
+    this.activeSlide = undefined;
+    this.activeDisplay = undefined;
+    this.hidden = false;
+  }
+
   updated( changedProperties) {
-    if( changedProperties.has( "hidden")) {
+    console.log( `dia-slide[${this.id}] › updated()`, changedProperties);
+    if( changedProperties.has( "activeSlide")) {
       this.querySelectorAll( "dia-po")
-        .forEach(( element) => element.hidden = this.hidden);
+        .forEach(( element) => element.activeSlide = this.activeSlide);
+      this.hidden = (typeof this.activeSlide !== "undefined"
+                    && this.activeSlide !== this.id);
+    }
+    if( changedProperties.has( "activeDisplay")) {
+      this.querySelectorAll( "dia-po")
+        .forEach(( element) => element.activeDisplay = this.activeDisplay);
+    }
+    if( changedProperties.has( "id")) {
+      this.querySelectorAll( "dia-po")
+        .forEach(( element) => element.parentSlide = this.id);
     }
   }
 

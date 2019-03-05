@@ -39,37 +39,24 @@ export class DiaShow extends LitElement {
     }
   }
 
-  // If no slide is currently active, display all slides; otherwise,
-  // display only the active slide and hide all other slides
+  // Propagate the active slide id to the ‹dia-slide› child elements,
+  // which will in turn hide/reveal themselves, and propagate the id
+  // to their child ‹dia-po› elements
   _switchActiveSlide() {
-    console.log( `New slide: ${this.slide}`);
     const activeSlideId = this.slide != null ? this.slide : undefined;
+    console.log( `dia-show › Switch to slide: ${activeSlideId}`);
     this.querySelectorAll( "dia-slide")
-      .forEach(( elt) => {
-        const slideId = elt.getAttribute( "id");
-        if( typeof activeSlideId === "undefined" || activeSlideId === slideId) {
-          elt.removeAttribute( "hidden");
-        } else {
-          elt.setAttribute( "hidden", "");
-        };
-      });
+      .forEach(( element) => element.activeSlide = activeSlideId);
   };
 
-  // If no display is currently active, display slides targetting any display;
-  // otherwise, display only diapositives targetting the active display
-  // and hide all other diapositives
+  // Propagate the active display id to the ‹dia-slide› child elements,
+  // which will in turn propagate the id to their child ‹dia-po› elements,
+  // and the later will hide/reveal themselves
   _switchActiveDisplay() {
     const activeDisplayId = this.display != null ? this.display : undefined;
-    console.log( `New display: ${this.display}, ${activeDisplayId}`);
-    this.querySelectorAll( "dia-po")
-      .forEach(( elt) => {
-        const displayId = elt.getAttribute( "display");
-        if( typeof activeDisplayId === "undefined" || activeDisplayId === displayId) {
-          elt.removeAttribute( "hidden");
-        } else {
-          elt.setAttribute( "hidden", "");
-        };
-      });
+    console.log( `dia-show › Switch to display: ${activeDisplayId}`);
+    this.querySelectorAll( "dia-slide")
+      .forEach(( element) => element.activeDisplay = activeDisplayId);
   }
 }
 

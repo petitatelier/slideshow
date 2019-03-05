@@ -9,6 +9,9 @@ export class DiaPo extends LitElement {
   static get properties() {
     return {
       display: { type: String },
+      parentSlide: { type: String, attribute: false },
+      activeSlide: { type: String, attribute: false },
+      activeDisplay: { type: String, attribute: false },
       hidden: { type: Boolean, reflect: true }
     }
   }
@@ -23,10 +26,22 @@ export class DiaPo extends LitElement {
   constructor() {
     super();
     this.display = undefined;
+    this.parentSlide = undefined;
+    this.activeSlide = undefined;
+    this.activeDisplay = undefined;
     this.hidden = false;
   }
 
   updated( changedProperties) {
+    console.log( `dia-po[${this.parentSlide}:${this.display}] › updated()`, changedProperties);
+    if( changedProperties.has( "activeSlide") || changedProperties.has( "activeDisplay")) {
+      this.hidden = ( typeof this.activeDisplay !== "undefined"
+                      && typeof this.display !== "undefined"
+                      && this.activeDisplay !== this.display)
+                  ||( typeof this.activeSlide !== "undefined"
+                      && typeof this.parentSlide !== "undefined"
+                      && this.activeSlide !== this.parentSlide);
+    }
     if( changedProperties.has( "hidden")) {
       this.querySelectorAll( "dia-livecode")
         .forEach(( element) => element.hidden = this.hidden);
