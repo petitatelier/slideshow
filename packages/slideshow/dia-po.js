@@ -28,7 +28,7 @@ export class DiaPo extends LitElement {
 
   updated( changedProperties) {
     if( changedProperties.has( "hidden")) {
-      this.querySelectorAll( "dia-glitch")
+      this.querySelectorAll( "dia-livecode")
         .forEach(( element) => element.hidden = this.hidden);
     }
   }

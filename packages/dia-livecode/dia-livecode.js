@@ -5,7 +5,7 @@ import { CommonStyles } from "@petitatelier/slideshow/shared-styles.js";
 // HTTP error 429 « Too Many Requests » from Glitch
 const MIN_REFRESH_TIMEOUT = 2000; // in milliseconds
 
-export class DiaGlitch extends LitElement {
+export class DiaLiveCode extends LitElement {
   static get styles() {
     return [
       CommonStyles,
@@ -15,6 +15,7 @@ export class DiaGlitch extends LitElement {
 
   static get properties() {
     return {
+      type: { type: String, attribute: false }, // no observed attribute, property only
       project: { type: String },
       mode: { type: String },
       file: { type: String },
@@ -40,7 +41,7 @@ export class DiaGlitch extends LitElement {
   render() {
     const url = this.getGlitchURL( this.project, this.mode, this.file);
     return html`
-      <div>‹dia-glitch ${this.project} ${this.mode}›</div>
+      <div>‹dia-livecode ${this.project} ${this.type} ${this.mode}›</div>
       <iframe
         allow="geolocation; microphone; camera; midi; encrypted-media"
         src="${url}"
@@ -55,30 +56,39 @@ export class DiaGlitch extends LitElement {
     super();
 
     // Public observed properties
+    this.type = "glitch";  // for future use
+    this.project = undefined;
+    this.mode = undefined;
     this._refresh = undefined;
     this.hidden = false;
 
     // Private properties
-    this._intervalId = undefined;
+    this._refreshIntervalId = undefined;
   }
 
   updated() {
-    if( typeof this._intervalId !== "undefined") {
-      clearInterval( this._intervalId);
+    if( typeof this._refreshIntervalId !== "undefined") {
+      clearInterval( this._refreshIntervalId);
     }
     if( this._refresh && !this.hidden) {
       const iframeElement = this.shadowRoot.querySelector( "iframe");
-      this._intervalId = setInterval(() => { iframeElement.src = iframeElement.src; }, this._refresh);
+      this._refreshIntervalId = setInterval(
+        () => { iframeElement.src = iframeElement.src; },
+        this._refresh
+      );
     }
   }
 
-  getGlitchURL( project, mode, file = "README.md") {
+  getGlitchURL( project, mode = "preview", file = "README.md") {
+    project = encodeURIComponent( project);
+    file = encodeURIComponent( file);
+
     switch( mode) {
-      case "app":
+      case "preview":
         return `https://${project}.glitch.me/`;
       case "editor":
         return `https://glitch.com/edit/#!/${project}?path=${file}`;
-      case "preview":
+      case "embed":
         // @see https://glitch.com/help/how-can-i-customize-a-glitch-app-embed/
         return `https://glitch.com/embed/#!/embed/${project}?path=${file}&previewSize=100`;
       default:
@@ -89,4 +99,4 @@ export class DiaGlitch extends LitElement {
 }
 
 // Register the element with the browser
-customElements.define( "dia-glitch", DiaGlitch);
+customElements.define( "dia-livecode", DiaLiveCode);
