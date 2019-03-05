@@ -7,6 +7,7 @@
   "scripts": {
     "bootstrap": "npm install && ./scripts/bootstrap.sh",
     "dev": "polyserve --npm --module-resolution=node --open-path=demos/index.html --hostname $npm_package_config_http_server_host --port $npm_package_config_http_server_port",
+    "watch": "npm run dev & browser-sync http://localhost:8081 --files \"./packages/**/*,./demos/**/*\"",
     "publish": "npx lerna publish"
   },
   "config": {
@@ -18,7 +19,8 @@
   "devDependencies": {
     "@webcomponents/webcomponentsjs": "^2.2.7",
     "lerna": "^3.13.0",
-    "polyserve": "^0.27.15"
+    "polyserve": "^0.27.15",
+    "browser-sync": "^2.26.3"
   },
   "keywords": [
     "slideshow",
