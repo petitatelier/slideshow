@@ -1,6 +1,6 @@
 {
   "name": "@petitatelier/slideshow",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A multiplex slideshow system, spreading a presentation on multiple displays",
   "author": "Olivier & Yves Lange",
   "license": "BSD-3-Clause",
