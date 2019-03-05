@@ -8,7 +8,8 @@ export class DiaSlide extends LitElement {
 
   static get properties() {
     return {
-      id: { type: String }
+      id: { type: String },
+      hidden: { type: Boolean, reflect: true }
     }
   }
 
@@ -17,6 +18,13 @@ export class DiaSlide extends LitElement {
       <div>‹dia-slide ${this.id}›</div>
       <slot></slot>
     `;
+  }
+
+  updated( changedProperties) {
+    if( changedProperties.has( "hidden")) {
+      this.querySelectorAll( "dia-po")
+        .forEach(( element) => element.hidden = this.hidden);
+    }
   }
 
 }

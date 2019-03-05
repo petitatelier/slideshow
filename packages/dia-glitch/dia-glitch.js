@@ -1,17 +1,40 @@
 import { LitElement, html, css } from "lit-element";
 import { CommonStyles } from "@petitatelier/slideshow/shared-styles.js";
 
+// Minimum refresh timeout, to clamp refresh time and avoid receiving
+// HTTP error 429 « Too Many Requests » from Glitch
+const MIN_REFRESH_TIMEOUT = 2000; // in milliseconds
+
 export class DiaGlitch extends LitElement {
   static get styles() {
-    return [ CommonStyles, css`:host { display: flex; flex-grow: 1 }` ];
+    return [
+      CommonStyles,
+      css`:host { display: flex; flex-grow: 1 }`
+    ];
   };
 
   static get properties() {
     return {
       project: { type: String },
       mode: { type: String },
-      file: { type: String }
+      file: { type: String },
+      refresh: { type: Number, reflect: true },
+      hidden: { type: Boolean, reflect: true }
     }
+  }
+
+  get refresh() { return this._refresh; }
+  set refresh( newVal) {
+    const oldVal = this._refresh;
+    // Constrain refresh timeout value to a minimum of MIN_REFRESH_TIMEOUT
+    this._refresh = (newVal == void 0) ? newVal // undefined or null
+      : (Number.isInteger( newVal) && newVal > MIN_REFRESH_TIMEOUT) ? newVal : MIN_REFRESH_TIMEOUT;
+    if( this._refresh) {
+      this.setAttribute( "refresh", this._refresh);
+    } else {
+      this.removeAttribute( "refresh");
+    }
+    this.requestUpdate( "refresh", oldVal);
   }
 
   render() {
@@ -30,6 +53,23 @@ export class DiaGlitch extends LitElement {
 
   constructor() {
     super();
+
+    // Public observed properties
+    this._refresh = undefined;
+    this.hidden = false;
+
+    // Private properties
+    this._intervalId = undefined;
+  }
+
+  updated() {
+    if( typeof this._intervalId !== "undefined") {
+      clearInterval( this._intervalId);
+    }
+    if( this._refresh && !this.hidden) {
+      const iframeElement = this.shadowRoot.querySelector( "iframe");
+      this._intervalId = setInterval(() => { iframeElement.src = iframeElement.src; }, this._refresh);
+    }
   }
 
   getGlitchURL( project, mode, file = "README.md") {

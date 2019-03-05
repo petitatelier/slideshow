@@ -8,7 +8,8 @@ export class DiaPo extends LitElement {
 
   static get properties() {
     return {
-      display: { type: String }
+      display: { type: String },
+      hidden: { type: Boolean, reflect: true }
     }
   }
 
@@ -17,6 +18,19 @@ export class DiaPo extends LitElement {
       <div>‹dia-po ${this.display}›</div>
       <slot></slot>
     `;
+  }
+
+  constructor() {
+    super();
+    this.display = undefined;
+    this.hidden = false;
+  }
+
+  updated( changedProperties) {
+    if( changedProperties.has( "hidden")) {
+      this.querySelectorAll( "dia-glitch")
+        .forEach(( element) => element.hidden = this.hidden);
+    }
   }
 
 }
