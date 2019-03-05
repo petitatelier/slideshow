@@ -4,7 +4,7 @@ import { CommonStyles, DiaShowStyles } from "./shared-styles.js";
 export class DiaShow extends LitElement {
   static get styles() {
     return [ CommonStyles, DiaShowStyles ];
-  };
+  }
 
   static get properties() {
     return {
@@ -47,7 +47,7 @@ export class DiaShow extends LitElement {
     console.log( `dia-show › Switch to slide: ${activeSlideId}`);
     this.querySelectorAll( "dia-slide")
       .forEach(( element) => element.activeSlide = activeSlideId);
-  };
+  }
 
   // Propagate the active display id to the ‹dia-slide› child elements,
   // which will in turn propagate the id to their child ‹dia-po› elements,
@@ -57,6 +57,30 @@ export class DiaShow extends LitElement {
     console.log( `dia-show › Switch to display: ${activeDisplayId}`);
     this.querySelectorAll( "dia-slide")
       .forEach(( element) => element.activeDisplay = activeDisplayId);
+  }
+
+  // Sets the next slide as the current one.
+  next() {
+    if(this.slide === null) { return; }
+    var slide = this.querySelectorAll( `dia-slide[id="${this.slide}"]`)[0];
+    var nextSlide = slide.nextElementSibling;
+    if(nextSlide != null && nextSlide.tagName == "DIA-SLIDE"){
+      this.slide = nextSlide.getAttribute("id");
+    }
+  }
+
+  // Sets the previous slide as the current one.
+  previous() {
+    if(this.slide === null) { return; }
+    var slide = this.querySelectorAll( `dia-slide[id="${this.slide}"]`)[0];
+    var prevSlide = slide.previousElementSibling;
+    if(prevSlide != null && prevSlide.tagName == "DIA-SLIDE"){
+      this.slide = prevSlide.getAttribute("id");
+    }
+  }
+
+  fullescreen() {
+    this.requestFullscreen();
   }
 }
 

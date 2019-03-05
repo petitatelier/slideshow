@@ -4,7 +4,7 @@ import { CommonStyles, DiaPoStyles } from "./shared-styles.js";
 export class DiaPo extends LitElement {
   static get styles() {
     return [ CommonStyles, DiaPoStyles ];
-  };
+  }
 
   static get properties() {
     return {
@@ -30,6 +30,20 @@ export class DiaPo extends LitElement {
     this.activeSlide = undefined;
     this.activeDisplay = undefined;
     this.hidden = false;
+  }
+
+  firstUpdated() {
+    // Checks if the element is in the valid container.
+    var diaShow = this.closest("dia-show");
+    if(!diaShow){ throw new Error(`The dia-po '${this.id}' needs to be in the ‹diaShow› element`); }
+
+    // Checks if the current ‹diaShow› display was defined and
+    // sets itself as the active one if none was selected.
+    this.addEventListener("click", () => {
+      if(diaShow.getAttribute("display") === null) {
+        diaShow.setAttribute("display", this.display);
+      }
+    });
   }
 
   updated( changedProperties) {

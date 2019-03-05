@@ -30,6 +30,20 @@ export class DiaSlide extends LitElement {
     this.hidden = false;
   }
 
+  firstUpdated() {
+    // Checks if the element is in the valid container.
+    var diaShow = this.closest("dia-show");
+    if(!diaShow){ throw new Error(`The slide '${this.id}' needs to be in the ‹diaShow› element`); }
+
+    // Checks if the current ‹diaShow› slide was defined and
+    // sets itself as the active one if none was selected.
+    this.addEventListener("click", () => {
+      if(diaShow.getAttribute("slide") === null) {
+        diaShow.setAttribute("slide", this.id);
+      }
+    });
+  }
+
   updated( changedProperties) {
     console.log( `dia-slide[${this.id}] › updated()`, changedProperties);
     if( changedProperties.has( "activeSlide")) {
