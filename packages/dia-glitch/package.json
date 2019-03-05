@@ -1,13 +1,13 @@
 {
   "name": "@petitatelier/dia-glitch",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "author": "Olivier & Yves Lange",
   "license": "BSD-3-Clause",
   "main": "dia-glitch.js",
   "scripts": {},
   "dependencies": {
-    "@petitatelier/slideshow": "^0.0.1",
+    "@petitatelier/slideshow": "^0.0.2",
     "lit-element": "^2.0.1"
   },
   "keywords": [
