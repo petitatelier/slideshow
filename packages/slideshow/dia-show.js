@@ -19,7 +19,7 @@ export class DiaShow extends LitElement {
 
   render() {
     return html`
-      <div>‹dia-show›</div>
+      <div>‹dia-show slide ${this.slide}, display ${this.display}›</div>
       <slot></slot>
     `;
   }
@@ -39,13 +39,15 @@ export class DiaShow extends LitElement {
     }
   }
 
+  // If no slide is currently active, display all slides; otherwise,
+  // display only the active slide and hide all other slides
   _switchActiveSlide() {
     console.log( `New slide: ${this.slide}`);
-    const activeSlideId = this.slide;
+    const activeSlideId = this.slide != null ? this.slide : undefined;
     this.querySelectorAll( "dia-slide")
       .forEach(( elt) => {
         const slideId = elt.getAttribute( "id");
-        if( activeSlideId === slideId) {
+        if( typeof activeSlideId === "undefined" || activeSlideId === slideId) {
           elt.removeAttribute( "hidden");
         } else {
           elt.setAttribute( "hidden", "");
@@ -53,13 +55,16 @@ export class DiaShow extends LitElement {
       });
   };
 
+  // If no display is currently active, display slides targetting any display;
+  // otherwise, display only diapositives targetting the active display
+  // and hide all other diapositives
   _switchActiveDisplay() {
-    console.log( `New display: ${this.display}`);
-    const activeDisplayId = this.display;
+    const activeDisplayId = this.display != null ? this.display : undefined;
+    console.log( `New display: ${this.display}, ${activeDisplayId}`);
     this.querySelectorAll( "dia-po")
       .forEach(( elt) => {
         const displayId = elt.getAttribute( "display");
-        if( activeDisplayId === displayId) {
+        if( typeof activeDisplayId === "undefined" || activeDisplayId === displayId) {
           elt.removeAttribute( "hidden");
         } else {
           elt.setAttribute( "hidden", "");

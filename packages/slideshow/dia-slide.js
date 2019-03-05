@@ -6,9 +6,15 @@ export class DiaSlide extends LitElement {
     return [ CommonStyles, DiaSlideStyles ];
   };
 
+  static get properties() {
+    return {
+      id: { type: String }
+    }
+  }
+
   render() {
     return html`
-      <div>‹dia-slide›</div>
+      <div>‹dia-slide ${this.id}›</div>
       <slot></slot>
     `;
   }

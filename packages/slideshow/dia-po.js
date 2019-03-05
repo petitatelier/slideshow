@@ -6,9 +6,15 @@ export class DiaPo extends LitElement {
     return [ CommonStyles, DiaPoStyles ];
   };
 
+  static get properties() {
+    return {
+      display: { type: String }
+    }
+  }
+
   render() {
     return html`
-      <div>‹dia-po›</div>
+      <div>‹dia-po ${this.display}›</div>
       <slot></slot>
     `;
   }
