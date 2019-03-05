@@ -22,15 +22,11 @@ const
       display: flex; flex-direction: column;
       flex-grow: 1;
       background-color: green }
-  `,
-  DiaSpeakerStyles = css`
-    :host { display: block }
   `;
 
 export {
   CommonStyles,
   DiaShowStyles,
   DiaSlideStyles,
-  DiaPoStyles,
-  DiaSpeakerStyles
+  DiaPoStyles
 };

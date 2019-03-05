@@ -1,4 +1,4 @@
-# @petitatelier/slideshow
+# @petitatelier/dia-show
 
 A multiplex slideshow system, spreading a presentation on multiple displays.
 

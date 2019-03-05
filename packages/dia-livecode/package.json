@@ -7,7 +7,7 @@
   "main": "dia-livecode.js",
   "scripts": {},
   "dependencies": {
-    "@petitatelier/slideshow": "^0.0.3",
+    "@petitatelier/dia-show": "^0.0.3",
     "lit-element": "^2.0.1"
   },
   "keywords": [

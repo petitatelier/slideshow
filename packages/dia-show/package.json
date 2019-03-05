@@ -1,5 +1,5 @@
 {
-  "name": "@petitatelier/slideshow",
+  "name": "@petitatelier/dia-show",
   "version": "0.0.3",
   "description": "A multiplex slideshow system, spreading a presentation on multiple displays",
   "author": "Olivier & Yves Lange",
@@ -24,7 +24,7 @@
   "bugs": {
     "url": "https://github.com/petitatelier/slideshow/issues"
   },
-  "homepage": "https://github.com/petitatelier/slideshow/tree/master/packages/slideshow#readme",
+  "homepage": "https://github.com/petitatelier/slideshow/tree/master/packages/dia-show#readme",
   "publishConfig": {
     "access": "public"
   }
