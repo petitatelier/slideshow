@@ -79,7 +79,7 @@ export class DiaShow extends LitElement {
     }
   }
 
-  fullescreen() {
+  fullscreen() {
     this.requestFullscreen();
   }
 }
