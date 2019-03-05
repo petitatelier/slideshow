@@ -1,18 +1,13 @@
 {
   "name": "@petitatelier/slideshow",
-  "private": true,
+  "version": "0.0.0",
   "description": "A multiplex slideshow system, spreading a presentation on multiple displays",
   "author": "Olivier & Yves Lange",
   "license": "BSD-3-Clause",
-  "scripts": {
-    "bootstrap": "npm install && ./scripts/bootstrap.sh",
-    "dev": "polyserve --npm --module-resolution=node --open-path=demos/index.html",
-    "publish": "npx lerna publish"
-  },
-  "devDependencies": {
-    "@webcomponents/webcomponentsjs": "^2.2.7",
-    "lerna": "^3.13.0",
-    "polyserve": "^0.27.15"
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {
+    "lit-element": "^2.0.1"
   },
   "keywords": [
     "slideshow",
@@ -25,5 +20,12 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/petitatelier/slideshow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/petitatelier/slideshow/issues"
+  },
+  "homepage": "https://github.com/petitatelier/slideshow/tree/master/packages/slideshow#readme",
+  "publishConfig": {
+    "access": "public"
   }
 }
