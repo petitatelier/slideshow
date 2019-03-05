@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>@petitatelier/slideshow elements demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <link rel="stylesheet" href="demo-components.css">
+</head>
+<body class="unresolved">
+  <noscript>Please enable JavaScript to view this website.</noscript>
+
+  <header>
+    <a href="index.html">Catalog</a>
+    <span> › Element ‹dia-glitch›</span>
+  </header>
+
+  <main>
+    <dia-show>
+      <dia-slide id="s01">
+        <dia-po display="proj01"><dia-glitch project="power-asteroid" mode="editor" file="index.html"></dia-glitch></dia-po>
+        <dia-po display="tv01"><dia-glitch project="power-asteroid" mode="preview" file="index.html"></dia-glitch></dia-po>
+      </dia-slide>
+      <dia-slide id="s02">
+        <dia-po display="proj01"><dia-glitch project="power-asteroid" mode="app"></dia-glitch></dia-po>
+        <dia-po display="tv01">
+          <p>Some texte next to the running app (which does not receive
+            live updates from the editor)</p></dia-po>
+      </dia-slide>
+    </dia-show>
+  </main>
+
+  <script type="module" src="../node_modules/@petitatelier/slideshow/index.js"></script>
+  <script type="module" src="../node_modules/@petitatelier/dia-glitch/dia-glitch.js"></script>
+  <script>
+    addEventListener( "load", () => document.body.classList.remove( "unresolved"));
+  </script>
+</body>
+</html>

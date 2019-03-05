@@ -1,0 +1,33 @@
+{
+  "name": "@petitatelier/dia-glitch",
+  "version": "0.0.1",
+  "description": "",
+  "author": "Olivier & Yves Lange",
+  "license": "BSD-3-Clause",
+  "main": "dia-glitch.js",
+  "scripts": {},
+  "dependencies": {
+    "@petitatelier/slideshow": "^0.0.1",
+    "lit-element": "^2.0.1"
+  },
+  "keywords": [
+    "glitch",
+    "slideshow",
+    "multiplex",
+    "diapositive",
+    "slide",
+    "deck",
+    "webcomponents"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/petitatelier/slideshow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/petitatelier/slideshow/issues"
+  },
+  "homepage": "https://github.com/petitatelier/slideshow/tree/master/packages/dia-glitch#readme",
+  "publishConfig": {
+    "access": "public"
+  }
+}
