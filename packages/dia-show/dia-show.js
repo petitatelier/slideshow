@@ -34,6 +34,7 @@ export class DiaShow extends LitElement {
   firstUpdated() {
     // Sets the new slide when the custom event `slide-clicked` is fired from a child
     this.addEventListener("slide-clicked", (e) => {
+      e.stopPropagation()
       if(this.slide == undefined){
         this.slide = e.detail.slide;
       }
@@ -41,6 +42,7 @@ export class DiaShow extends LitElement {
 
     // Sets the new slide when the custom event `diapo-clicked` is fired from a child
     this.addEventListener("dia-po-clicked", (e) => {
+      e.stopPropagation()
       if(this.slide == undefined && this.display == undefined){
         this.slide = e.detail.slide;
         this.display = e.detail.display;
