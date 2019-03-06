@@ -61,30 +61,13 @@ export default class DiaController extends LitElement {
       //
       // Set the detached mode when the `liveHead` differs from the user `head`
       // and the detached mode was not previously set (sanity)
-      if(!this.speaker && this.liveHead != this.head && !this.detached) {
+      if(!this.speaker && this.liveHead != this.head && this.liveHead != undefined && !this.detached) {
         this.detach();
       }
     }
     if( changedProperties.has( "target") && this.target != undefined) {
       this._keyboardController.registerKeyboardListeners( this.target);
     }
-  }
-
-  // Move to the specified slide and/or display
-  moveTo( slide, display) {
-    console.log( "dia-controller › moveTo()", slide, display);
-    this.moveToSlide(slide);
-    this.moveToDisplay(display);
-  }
-
-  // Move to the specified slide
-  moveToSlide( slide) {
-    this.target.slide = slide != null ? slide : undefined; // cast null to undefined
-  }
-
-  // Move to the specified display
-  moveToDisplay( display) {
-    this.target.display = display != null ? display : undefined; // cast null to undefined
   }
 
   // Set the next slide as the current one.
@@ -109,6 +92,23 @@ export default class DiaController extends LitElement {
     }
   }
 
+  // Move to the specified slide and/or display
+  moveTo( slide, display) {
+    console.log( "dia-controller › moveTo()", slide, display);
+    this.moveToSlide(slide);
+    this.moveToDisplay(display);
+  }
+
+  // Move to the specified slide
+  moveToSlide( slide) {
+    this.target.slide = slide != null ? slide : undefined; // cast null to undefined
+  }
+
+  // Move to the specified display
+  moveToDisplay( display) {
+    this.target.display = display != null ? display : undefined; // cast null to undefined
+  }
+
   // Detach from the head
   detach(){
     if(this.detached) {
@@ -123,8 +123,8 @@ export default class DiaController extends LitElement {
     console.log("Controller > resynchronized with liveHead");
     this.detachedHead = undefined;
     this.__dispatchEvt("detach-disabled");
-    if( this.liveHead == this.head) {
-      // this.next();
+    if( this.speaker && this.liveHead == this.head) {
+      this.next();
     } else {
       this.__dispatchEvt("slide-selected", {slide: this.liveHead});
     }
@@ -150,7 +150,6 @@ export default class DiaController extends LitElement {
     }
   }
 
-
   /**
    * Helper to dispatch a custom event name and its details
    */
@@ -158,7 +157,13 @@ export default class DiaController extends LitElement {
     this.dispatchEvent( new CustomEvent(name, {
       detail: detail, bubbles: bubbles, composed: composed
     }));
+  }
 
+  focus(){
+    if(this.speaker && this.detached) {
+      this._remoteController.updateSlideHead(this.head);
+      this.__dispatchEvt("detach-disabled");
+    }
   }
 
 }

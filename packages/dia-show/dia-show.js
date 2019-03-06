@@ -122,14 +122,12 @@ export class DiaShow extends LitElement {
 
   // Enables the speaker mode when the custom event `speaker-enabled` is fired from a child.
   _onSpeakerToggled( e) {
-    console.log("SPEAKER Toggled!!!");
     this.speaker = !this.speaker;
     e.stopPropagation();
   }
 
   // Enables the detached mode when the custom event `detach-enabled` is fired from a child.
   _onDetachEnabled( e) {
-    console.log("DETACHED!!!");
     this.detached = true;
     e.stopPropagation();
   }
@@ -141,7 +139,6 @@ export class DiaShow extends LitElement {
   }
 
   _onFullscreenEnabled( e) {
-    console.log("ok");
     this.requestFullscreen();
     e.stopPropagation();
   }
