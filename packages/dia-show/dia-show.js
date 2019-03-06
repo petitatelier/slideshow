@@ -20,21 +20,29 @@ export class DiaShow extends LitElement {
   render() {
     return html`
       <div>‹dia-show slide ${this.slide}, display ${this.display}›</div>
+      <dia-display-selector .displayList=${this._displayList}></dia-display-selector>
       <slot></slot>
     `;
   }
 
   constructor() {
     super();
+
+    // Attach event listeners
+    this.addEventListener( "display-selected", this._displaySelected);
+
+    // Public observed properties
     this.slide = undefined;
     this.display = undefined;
 
+    // Private properties
+    this._displayList = this._enumerateDisplays(); // returns a `Set`
   }
 
   firstUpdated() {
     // Sets the new slide when the custom event `slide-selected` is fired from a child.
     this.addEventListener("slide-selected", (e) => {
-      e.stopPropagation()
+      e.stopPropagation();
       if(this.slide == undefined){
         this.slide = e.detail.slide;
       }
@@ -42,7 +50,7 @@ export class DiaShow extends LitElement {
 
     // Sets the new display when the custom event `display-selected` is fired from a child.
     this.addEventListener("display-selected", (e) => {
-      e.stopPropagation()
+      e.stopPropagation();
       if(this.display == undefined){
         this.display = e.detail.display;
       }
@@ -105,6 +113,29 @@ export class DiaShow extends LitElement {
 
   fullscreen() {
     this.requestFullscreen();
+  }
+
+  // Returns a `Set` of distinct display identifiers used
+  // on child ‹dia-po› elements
+  _enumerateDisplays() {
+    const diapoElements = this.querySelectorAll( "dia-po"),
+          displays = new Set();
+
+    diapoElements.forEach(( element) => {
+      // We use `getAttribute( "display")` to get the attribute value
+      // from the DOM, instead of `element.display`, because at the time
+      // this method gets called, the ‹dia-po› custom element might not
+      // have been defined yet
+      displays.add( element.getAttribute( "display"));
+    });
+    return displays;
+  }
+
+  _displaySelected( e) {
+    e.stopPropagation();
+    const selectedDisplay = e.detail.display;
+    console.log( `dia-show › _displaySelected(): ${selectedDisplay}`);
+    this.display = selectedDisplay;
   }
 }
 
