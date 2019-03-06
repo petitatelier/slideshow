@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit-element";
 import { CommonStyles, DiaShowStyles } from "./shared-styles.js";
-import { registerKeyboardListeners } from "./dia-controller-keyboard.js";
+import Controller from "./dia-controller.js";
 
 export class DiaShow extends LitElement {
   static get styles() {
@@ -22,6 +22,7 @@ export class DiaShow extends LitElement {
     return html`
       <div>‹dia-show slide ${this.slide}, display ${this.display}›</div>
       <dia-display-selector .displayList=${this._displayList}></dia-display-selector>
+      <dia-controller head="${this.slide}"></dia-controller>
       <slot></slot>
     `;
   }
@@ -32,7 +33,6 @@ export class DiaShow extends LitElement {
     // Attach event listeners
     this.addEventListener( "display-selected", this._onDisplaySelected);
     this.addEventListener( "slide-selected", this._onSlideSelected);
-    registerKeyboardListeners( this);
 
     // Public observed properties
     this.slide = undefined;
@@ -40,6 +40,11 @@ export class DiaShow extends LitElement {
 
     // Private properties
     this._displayList = this._enumerateDisplays(); // returns a `Set`
+  }
+
+  firstUpdated(){
+    this._controller = this.shadowRoot.querySelector("dia-controller");
+    this._controller.target = this;
   }
 
   updated( changedProperties) {
@@ -71,35 +76,6 @@ export class DiaShow extends LitElement {
       .forEach(( element) => element.activeDisplay = activeDisplayId);
   }
 
-  moveTo( slide, display) {
-    console.log( "dia-show › moveTo()", slide, display);
-    this.slide = slide != null ? slide : undefined; // cast null to undefined
-    this.display = display != null ? display : undefined; // cast null to undefined
-  }
-
-  // Sets the next slide as the current one.
-  next() {
-    if(this.slide === null) { return; }
-    var slide = this.querySelectorAll( `dia-slide[id="${this.slide}"]`)[0];
-    var nextSlide = slide.nextElementSibling;
-    if(nextSlide != null && nextSlide.tagName == "DIA-SLIDE"){
-      this.slide = nextSlide.getAttribute("id");
-    }
-  }
-
-  // Sets the previous slide as the current one.
-  previous() {
-    if(this.slide === null) { return; }
-    var slide = this.querySelectorAll( `dia-slide[id="${this.slide}"]`)[0];
-    var prevSlide = slide.previousElementSibling;
-    if(prevSlide != null && prevSlide.tagName == "DIA-SLIDE"){
-      this.slide = prevSlide.getAttribute("id");
-    }
-  }
-
-  fullscreen() {
-    this.requestFullscreen();
-  }
 
   // Returns a `Set` of distinct display identifiers used
   // on child ‹dia-po› elements
