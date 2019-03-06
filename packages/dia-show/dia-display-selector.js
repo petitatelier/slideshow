@@ -31,7 +31,6 @@ export class DiaDisplaySelector extends LitElement {
 
   _onSelected( e) {
     const selectedDisplayId = e.target.id;
-    console.debug( `dia-display-selector › on-selected: ${selectedDisplayId}`);
     this.dispatchEvent(
       new CustomEvent( "display-selected", {
         detail: { display: selectedDisplayId },

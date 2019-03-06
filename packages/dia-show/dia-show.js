@@ -84,12 +84,19 @@ export class DiaShow extends LitElement {
 
   // Propagate the active display id to the ‹dia-slide› child elements,
   // which will in turn propagate the id to their child ‹dia-po› elements,
-  // and the later will hide/reveal themselves
+  // and the later will hide/reveal themselves.
+  //
+  // Also propagates the active display to the ‹dia-display-selector›
+  // child element, so that it correctly highlights the selected display
   _updatedActiveDisplay() {
     const activeDisplayId = this.display != null ? this.display : undefined;
     console.log( `dia-show › Switch to display: ${activeDisplayId}`);
+    // Propagate to ‹dia-slide› child elements
     this.querySelectorAll( "dia-slide")
       .forEach(( element) => element.activeDisplay = activeDisplayId);
+    // Propagate to ‹dia-display-selector› child element
+    this.shadowRoot.querySelector( "dia-display-selector")
+      .selectedDisplayId = activeDisplayId;
   }
 
   moveTo( slide, display) {
