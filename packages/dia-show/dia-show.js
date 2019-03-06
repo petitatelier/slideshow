@@ -32,19 +32,18 @@ export class DiaShow extends LitElement {
   }
 
   firstUpdated() {
-    // Sets the new slide when the custom event `slide-clicked` is fired from a child
-    this.addEventListener("slide-clicked", (e) => {
+    // Sets the new slide when the custom event `slide-selected` is fired from a child.
+    this.addEventListener("slide-selected", (e) => {
       e.stopPropagation()
       if(this.slide == undefined){
         this.slide = e.detail.slide;
       }
     });
 
-    // Sets the new slide when the custom event `diapo-clicked` is fired from a child
-    this.addEventListener("dia-po-clicked", (e) => {
+    // Sets the new display when the custom event `display-selected` is fired from a child.
+    this.addEventListener("display-selected", (e) => {
       e.stopPropagation()
-      if(this.slide == undefined && this.display == undefined){
-        this.slide = e.detail.slide;
+      if(this.display == undefined){
         this.display = e.detail.display;
       }
     });

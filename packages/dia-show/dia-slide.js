@@ -31,10 +31,10 @@ export class DiaSlide extends LitElement {
   }
 
   firstUpdated() {
-    // Dispatch a 'slide-clicked' event when the slide is clicked.  The detail
+    // Dispatch a 'slide-selected' event when the slide is clicked.  The detail
     // contains the `id` of the clicked slide.
     this.addEventListener("click", () => {
-      var event = new CustomEvent("slide-clicked", {
+      var event = new CustomEvent("slide-selected", {
         detail: { slide: this.id }, bubbles: true, composed: true
       });
       this.dispatchEvent(event);

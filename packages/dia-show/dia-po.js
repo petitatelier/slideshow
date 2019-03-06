@@ -33,13 +33,17 @@ export class DiaPo extends LitElement {
   }
 
   firstUpdated() {
-    // First a 'dia-po-clicked' event when the `dia-po` is clicked The detail
-    // contains the specified `display` and the `id` of the parent slide.
+    // Fires a 'slide-selected' with the selected slide and a 'display-selected'
+    // event with the selected display when the `dia-po` is clicked.
     this.addEventListener("click", () => {
-      var event = new CustomEvent("dia-po-clicked", {
-        detail: { slide: this.parentSlide, display: this.display }, bubbles: true, composed: true
+      var eventSlide = new CustomEvent("slide-selected", {
+        detail: { slide: this.parentSlide }, bubbles: true, composed: true
       });
-      this.dispatchEvent(event);
+      this.dispatchEvent(eventSlide);
+      var eventDisplay = new CustomEvent("display-selected", {
+        detail: { display: this.display }, bubbles: true, composed: true
+      });
+      this.dispatchEvent(eventDisplay);
      });
   }
 
