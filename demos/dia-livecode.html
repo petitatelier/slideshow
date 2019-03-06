@@ -24,15 +24,14 @@
       </dia-slide>
       <dia-slide id="s02">
         <dia-po display="proj01"><dia-livecode project="power-asteroid" mode="embed" file="index.html"></dia-livecode></dia-po>
-        <dia-po display="tv01">
-          <p>Some texte next to the running app (which does not receive
-            live updates from the editor)</p></dia-po>
+        <dia-po display="tv01"><dia-code>if( typeof activeSlide !== "undefined") { … }</dia-code></dia-po>
       </dia-slide>
     </dia-show>
   </main>
 
   <script type="module" src="../node_modules/@petitatelier/dia-show/index.js"></script>
   <script type="module" src="../node_modules/@petitatelier/dia-livecode/dia-livecode.js"></script>
+  <script type="module" src="../node_modules/@petitatelier/dia-code/dia-code.js"></script>
   <script>
     addEventListener( "load", () => document.body.classList.remove( "unresolved"));
   </script>

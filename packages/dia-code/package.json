@@ -1,17 +1,17 @@
 {
-  "name": "@petitatelier/dia-livecode",
+  "name": "@petitatelier/dia-code",
   "version": "0.1.0",
-  "description": "The ‹dia-livecode› web component embeds the Glitch collaborative code editor in a diapositive of a slideshow",
+  "description": "The ‹dia-code› web component displays code fragments in a monospaced font",
   "author": "Olivier & Yves Lange",
   "license": "BSD-3-Clause",
-  "main": "dia-livecode.js",
+  "main": "dia-code.js",
   "scripts": {},
   "dependencies": {
     "@petitatelier/dia-show": "^0.1.0",
     "lit-element": "^2.0.1"
   },
   "keywords": [
-    "glitch",
+    "code",
     "slideshow",
     "multiplex",
     "diapositive",
@@ -26,7 +26,7 @@
   "bugs": {
     "url": "https://github.com/petitatelier/slideshow/issues"
   },
-  "homepage": "https://github.com/petitatelier/slideshow/tree/master/packages/dia-livecode#readme",
+  "homepage": "https://github.com/petitatelier/slideshow/tree/master/packages/dia-code#readme",
   "publishConfig": {
     "access": "public"
   }

@@ -1,6 +1,6 @@
 # @petitatelier/dia-livecode
 
-A component to display Glitch collaborative code editor and/or preview inside a diapositive of a slideshow.
+Defines the ‹dia-livecode› web component, which displays the Glitch collaborative code editor and/or preview inside a diapositive of a slideshow.
 
 ## Features
 
