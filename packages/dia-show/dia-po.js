@@ -33,17 +33,14 @@ export class DiaPo extends LitElement {
   }
 
   firstUpdated() {
-    // Checks if the element is in the valid container.
-    var diaShow = this.closest("dia-show");
-    if(!diaShow){ throw new Error(`The dia-po '${this.id}' needs to be in the ‹diaShow› element`); }
-
-    // Checks if the current ‹diaShow› display was defined and
-    // sets itself as the active one if none was selected.
+    // First a 'dia-po-clicked' event when the `dia-po` is clicked The detail
+    // contains the specified `display` and the `id` of the parent slide.
     this.addEventListener("click", () => {
-      if(diaShow.getAttribute("display") === null) {
-        diaShow.setAttribute("display", this.display);
-      }
-    });
+      var event = new CustomEvent("dia-po-clicked", {
+        detail: { slide: this.parentSlide, display: this.display }, bubbles: true, composed: true
+      });
+      this.dispatchEvent(event);
+     });
   }
 
   updated( changedProperties) {

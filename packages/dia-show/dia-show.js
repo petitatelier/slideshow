@@ -28,6 +28,24 @@ export class DiaShow extends LitElement {
     super();
     this.slide = undefined;
     this.display = undefined;
+
+  }
+
+  firstUpdated() {
+    // Sets the new slide when the custom event `slide-clicked` is fired from a child
+    this.addEventListener("slide-clicked", (e) => {
+      if(this.slide == undefined){
+        this.slide = e.detail.slide;
+      }
+    });
+
+    // Sets the new slide when the custom event `diapo-clicked` is fired from a child
+    this.addEventListener("dia-po-clicked", (e) => {
+      if(this.slide == undefined && this.display == undefined){
+        this.slide = e.detail.slide;
+        this.display = e.detail.display;
+      }
+    });
   }
 
   updated( changedProperties) {
@@ -57,6 +75,11 @@ export class DiaShow extends LitElement {
     console.log( `dia-show › Switch to display: ${activeDisplayId}`);
     this.querySelectorAll( "dia-slide")
       .forEach(( element) => element.activeDisplay = activeDisplayId);
+  }
+
+  moveTo(slide, display) {
+    this.slide = slide != undefined ? slide : this.slide;
+    this.display = display != undefined ? display : this.display;
   }
 
   // Sets the next slide as the current one.
