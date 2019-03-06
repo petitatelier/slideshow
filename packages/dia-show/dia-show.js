@@ -1,5 +1,6 @@
 import { LitElement, html } from "lit-element";
 import { CommonStyles, DiaShowStyles } from "./shared-styles.js";
+import { registerKeyboardListeners } from "./dia-controller-keyboard.js";
 
 export class DiaShow extends LitElement {
   static get styles() {
@@ -31,6 +32,7 @@ export class DiaShow extends LitElement {
     // Attach event listeners
     this.addEventListener( "display-selected", this._onDisplaySelected);
     this.addEventListener( "slide-selected", this._onSlideSelected);
+    registerKeyboardListeners( this);
 
     // Public observed properties
     this.slide = undefined;
@@ -69,9 +71,10 @@ export class DiaShow extends LitElement {
       .forEach(( element) => element.activeDisplay = activeDisplayId);
   }
 
-  moveTo(slide, display) {
-    this.slide = slide != undefined ? slide : this.slide;
-    this.display = display != undefined ? display : this.display;
+  moveTo( slide, display) {
+    console.log( "dia-show › moveTo()", slide, display);
+    this.slide = slide != null ? slide : undefined; // cast null to undefined
+    this.display = display != null ? display : undefined; // cast null to undefined
   }
 
   // Sets the next slide as the current one.
