@@ -1,25 +1,10 @@
 import { LitElement, html, css } from "lit-element";
-import { CommonStyles } from "./shared-styles.js";
+import { CommonStyles, DiaDisplaySelectorStyles } from "./shared-styles.js";
 
 export class DiaDisplaySelector extends LitElement {
   static get styles() {
-    return [
-      CommonStyles,
-      css`
-        :host { display: inline-block }
-        div.select {
-          display: inline-block;
-          background-color: white;
-          border-radius: 1em;
-          padding: 0.25em 0.5em }
-        span.item {
-          padding: 0 0.5em;
-          cursor: pointer }
-        span.item:hover {
-          color: blue }
-      `
-    ];
-  };
+    return [ CommonStyles, DiaDisplaySelectorStyles ];
+  }
 
   static get properties() {
     return {

@@ -30,8 +30,18 @@ export class DiaShow extends LitElement {
     return html`
       <div>‹dia-show slide ${this.slide}, display ${this.display}›</div>
       <dia-display-selector .displayList=${this._displayList}></dia-display-selector>
+      <button id="cloneWindow" @click=${this._onCloneWindowClicked}>Clone window</button>
       <slot></slot>
     `;
+  }
+
+  _onCloneWindowClicked( e) {
+    console.debug( "dia-show › on-clone-window-clicked");
+    ++this._windowCount;
+    const currentURL = window.location.href,
+          windowName = `slideshow[${this._windowCount}]`,
+          windowObjRef = window.open( currentURL, windowName);
+    this._windowList.set( windowName, windowObjRef);
   }
 
   constructor() {
@@ -48,6 +58,12 @@ export class DiaShow extends LitElement {
 
     // Private properties
     this._displayList = this._enumerateDisplays(); // returns a `Set`
+    this._windowList = new Map(); // List and count of windows opened by the
+    this._windowCount = 0;        // user clicking the `cloneWindow` button
+  }
+
+  disconnectedCallback() {
+    this._dispose();
   }
 
   updated( changedProperties) {
@@ -139,6 +155,16 @@ export class DiaShow extends LitElement {
     console.log( `dia-show › on-slide-selected: ${selectedSlide}`);
     this.slide = selectedSlide;
     e.stopPropagation();
+  }
+
+  _dispose() {
+    // Close windows that would have been opened by the user clicking
+    // the `cloneWindow` button from this window
+    this._windowList.forEach(( windowObjRef, windowName) => {
+      console.debug( `dia-show › dispose(): closing window ${windowName}`);
+      windowObjRef.close();
+    })
+    this._windowList = undefined;
   }
 }
 
