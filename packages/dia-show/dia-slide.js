@@ -50,19 +50,32 @@ export class DiaSlide extends LitElement {
   updated( changedProperties) {
     console.log( `dia-slide[${this.id}] › updated()`, changedProperties);
     if( changedProperties.has( "activeSlide")) {
-      this.querySelectorAll( "dia-po")
-        .forEach(( element) => element.activeSlide = this.activeSlide);
-      this.hidden = (typeof this.activeSlide !== "undefined"
-                    && this.activeSlide !== this.id);
+      this._updatedActiveSlide();
     }
     if( changedProperties.has( "activeDisplay")) {
-      this.querySelectorAll( "dia-po")
-        .forEach(( element) => element.activeDisplay = this.activeDisplay);
+      this._updatedActiveDisplay();
     }
     if( changedProperties.has( "id")) {
-      this.querySelectorAll( "dia-po")
-        .forEach(( element) => element.parentSlide = this.id);
+      this._updatedId();
     }
+  }
+
+  _updatedActiveSlide() {
+    this.querySelectorAll( "dia-po")
+      .forEach(( element) => element.activeSlide = this.activeSlide);
+
+    this.hidden = (typeof this.activeSlide !== "undefined"
+                  && this.activeSlide !== this.id);
+  }
+
+  _updatedActiveDisplay() {
+    this.querySelectorAll( "dia-po")
+      .forEach(( element) => element.activeDisplay = this.activeDisplay);
+  }
+
+  _updatedId() {
+    this.querySelectorAll( "dia-po")
+      .forEach(( element) => element.parentSlide = this.id);
   }
 
 }

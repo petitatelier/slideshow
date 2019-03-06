@@ -56,18 +56,27 @@ export class DiaPo extends LitElement {
 
   updated( changedProperties) {
     console.log( `dia-po[${this.parentSlide}:${this.display}] › updated()`, changedProperties);
-    if( changedProperties.has( "activeSlide") || changedProperties.has( "activeDisplay")) {
-      this.hidden = ( typeof this.activeDisplay !== "undefined"
-                      && typeof this.display !== "undefined"
-                      && this.activeDisplay !== this.display)
-                  ||( typeof this.activeSlide !== "undefined"
-                      && typeof this.parentSlide !== "undefined"
-                      && this.activeSlide !== this.parentSlide);
+    if( changedProperties.has( "activeSlide")
+        || changedProperties.has( "activeDisplay")) {
+      this._updatedActiveSlideOrDisplay();
     }
     if( changedProperties.has( "hidden")) {
-      this.querySelectorAll( "dia-livecode")
-        .forEach(( element) => element.hidden = this.hidden);
+      this._updatedHidden();
     }
+  }
+
+  _updatedActiveSlideOrDisplay() {
+    this.hidden = (typeof this.activeDisplay !== "undefined"
+      && typeof this.display !== "undefined"
+      && this.activeDisplay !== this.display)
+      || (typeof this.activeSlide !== "undefined"
+        && typeof this.parentSlide !== "undefined"
+        && this.activeSlide !== this.parentSlide);
+  }
+
+  _updatedHidden() {
+    this.querySelectorAll( "dia-livecode")
+      .forEach(( element) => element.hidden = this.hidden);
   }
 
 }

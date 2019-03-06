@@ -32,7 +32,7 @@ export class DiaDisplaySelector extends LitElement {
         Array.from( this.displayList.values())
           .map(( display) =>
             html`<span id="${display}" class="item"
-                       @click=${this.selected}>${display}</span>`)
+                       @click=${this._onSelected}>${display}</span>`)
       }</div>`;
   }
 
@@ -41,7 +41,7 @@ export class DiaDisplaySelector extends LitElement {
     this.displayList = new Set();
   }
 
-  selected( e) {
+  _onSelected( e) {
     const selectedDisplay = e.target.id;
     this.dispatchEvent(
       new CustomEvent( "display-selected", {

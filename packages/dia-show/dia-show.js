@@ -42,17 +42,17 @@ export class DiaShow extends LitElement {
 
   updated( changedProperties) {
     if( changedProperties.has( "slide")) {
-      this._switchActiveSlide();
+      this._updatedActiveSlide();
     }
     if( changedProperties.has( "display")) {
-      this._switchActiveDisplay();
+      this._updatedActiveDisplay();
     }
   }
 
   // Propagate the active slide id to the ‹dia-slide› child elements,
   // which will in turn hide/reveal themselves, and propagate the id
   // to their child ‹dia-po› elements
-  _switchActiveSlide() {
+  _updatedActiveSlide() {
     const activeSlideId = this.slide != null ? this.slide : undefined;
     console.log( `dia-show › Switch to slide: ${activeSlideId}`);
     this.querySelectorAll( "dia-slide")
@@ -62,7 +62,7 @@ export class DiaShow extends LitElement {
   // Propagate the active display id to the ‹dia-slide› child elements,
   // which will in turn propagate the id to their child ‹dia-po› elements,
   // and the later will hide/reveal themselves
-  _switchActiveDisplay() {
+  _updatedActiveDisplay() {
     const activeDisplayId = this.display != null ? this.display : undefined;
     console.log( `dia-show › Switch to display: ${activeDisplayId}`);
     this.querySelectorAll( "dia-slide")
