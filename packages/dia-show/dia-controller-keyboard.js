@@ -4,18 +4,20 @@ import { LitElement } from "lit-element";
  * Mapping of navigation features to keyboard strokes.
  */
 const KEYBOARD_BINDINGS = Object.freeze({
-  FULLSCREEN: "KeyF",
-  DETACH: "Escape",
-  NEXT: "ArrowRight",
-  PREV: "ArrowLeft",
-  RESYNC: "Space",
-  FOCUS: "Enter"
+  FULLSCREEN: {code: "KeyF"},
+  DETACH: {code: "Escape"},
+  NEXT: {code: "ArrowRight"},
+  PREVIOUS: {code: "ArrowLeft"},
+  RESYNC: {code: "Space"},
+  TOGGLESPEAKER: {code: "KeyS"},
+  FOCUS: {code: "Space", ctrlKey: true},
 });
 
 export default class DiaControllerKeyboard extends LitElement {
 
   static get properties() {
     return {
+      controller: { type: Element },
       target: { type: Object }
     }
   }
@@ -23,58 +25,67 @@ export default class DiaControllerKeyboard extends LitElement {
   constructor() {
     super();
 
-    // Private properties
-    this._controller = undefined;
-
-    this._isDetached = false;
-  }
-
-  updated( changedProperties) {
+    // The controller to talk to.
+    this.controller = undefined;
   }
 
   /**
-   * Helper function that registers keyboard listeners on
-   * a target ‹dia-show› element, to allow to navigate
-   * the slideshow with specific keyboard strokes
+   * Helper function that registers keyboard listeners on a target ‹dia-show›
+   * element, to allow to navigate the slideshow with specific keyboard strokes
    **/
-  registerKeyboardListeners( target, controller) {
+  registerKeyboardListeners( target) {
     // Set ‹dia-show› to be focusable and focus it to listen the keyboard
     target.setAttribute( "tabIndex", "-1");
     target.focus();
 
     // Listen to the bindings and execute the corresponding action
     // on target ‹dia-show› element
-    target.addEventListener( "keyup", this.onKeyUp.bind( target));
+    target.addEventListener( "keyup", this.onKeyUp.bind( this));
+  }
 
-    // The current controller to talk to
-    this._controller = controller;
+  /**
+   * Returns the action associated to a specific keybind
+   */
+  getAction(e) {
+    const action = Object.keys(KEYBOARD_BINDINGS).find( (action) => {
+      return e.code == KEYBOARD_BINDINGS[action].code && e.ctrlKey == (KEYBOARD_BINDINGS[action].ctrlKey || false);
+    })
+    return action;
   }
 
   onKeyUp( e) {
-    // @assert This function must have been bound previously
-    // to its target ‹dia-show› element
-    // console.log( "on-keyup", this, e);
-    switch( e.code){
-      case KEYBOARD_BINDINGS.FULLSCREEN:
-        this._controller.fullscreen();
+    const action = this.getAction(e);
+    switch( action){
+      case "FULLSCREEN":
+        this.controller.fullscreen();
         break;
-      case KEYBOARD_BINDINGS.DETACH:
-        this._controller.detach();
+      case "DETACH":
+        this.controller.detach();
         break;
-      case KEYBOARD_BINDINGS.NEXT:
-        this._controller.next();
+      case "NEXT":
+        this.controller.next();
         break;
-      case KEYBOARD_BINDINGS.PREV:
-        this._controller.previous();
+      case "PREVIOUS":
+        this.controller.previous();
         break;
-      case KEYBOARD_BINDINGS.RESYNC:
-        this._controlle.resync();
+      case "RESYNC":
+        this.controller.resync();
         break;
-      case KEYBOARD_BINDINGS.FOCUS:
-        this._controller.focus();
+      case "FOCUS":
+        this.controller.focus();
+        break;
+      case "TOGGLESPEAKER":
+        this.controller.toggleSpeaker();
         break;
     }
   }
+
+  disconnectedCallback(){
+    super.disconnectedCallback();
+    target.removeEventListener( "keyup", this.onKeyUp);
+    this.target = undefined;
+  }
+
 }
 
 customElements.define("dia-controller-keyboard", DiaControllerKeyboard);

@@ -1,11 +1,20 @@
 import { LitElement } from "lit-element";
 
 export default class DiaControllerRemoteFirebase extends LitElement {
-  constructor(target, roomId="room:main") {
+  static get properties() {
+    return {
+      roomId: { type: String, attribute: "room-id" } // RoomId to listen in order to get the correct `head:slide`
+    }
+  }
+
+  constructor() {
     super();
 
+    // The controller to talk to.
+    this.controller = undefined;
+
     // The `live id` to follow when receiving  the slide number from firebase
-    this.roomId = roomId;
+    this.roomId = undefined;
 
     this._firebaseConfig = {
 			apiKey: "AIzaSyADiO_Dlp79UW1IO6DwX6Gyy3jUD8Z-rHI",
@@ -15,6 +24,7 @@ export default class DiaControllerRemoteFirebase extends LitElement {
 			storageBucket: "slideshow-npm-package.appspot.com",
 			messagingSenderId: "154605865517"
 		};
+
     this.initFirebase(this._firebaseConfig);
     this.initFirebaseAuth();
     this.initFirebaseDB();
@@ -47,19 +57,31 @@ export default class DiaControllerRemoteFirebase extends LitElement {
 		});
   }
 
+  // Firestore cloud database
   initFirebaseDB() {
-    // Firestore cloud database
-    let db = window.firebase.firestore();
-		db.collection("live").where("id", "==", this.roomId).onSnapshot( (querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-        let data = doc.data();
-        let event = new CustomEvent("slide-selected", {
-          detail: {slide: data.slide}, bubbles: true, composed: true
-        });
-        this.dispatchEvent(event);
-      });
-		});
+    this._db = window.firebase.firestore();
+  }
 
+  updated(changedProperties) {
+    if( changedProperties.has('roomId')){
+      this._listenRoomHeadSlide(this.roomId);
+    }
+  }
+
+  _listenRoomHeadSlide(roomId){
+    if(roomId == undefined) { return; }
+		this._db.collection("live").doc(this.roomId).onSnapshot( (doc) => {
+      const data = doc.data();
+      // this.controller.remoteHeadUpdated(data["head:slide"])
+      this.dispatchEvent( new CustomEvent( "live-head-updated", {
+        detail: {liveHead: data["head:slide"]}, bubbles: true, composed: true
+      }));
+    });
+  }
+
+  updateSlideHead(slideId){
+    console.log("Firebase > updating the current `head:slide` to", slideId);
+    this._db.collection("live").doc(this.roomId).update({"head:slide": slideId})
   }
 }
 

@@ -10,6 +10,12 @@ const
       flex-grow: 1;
       background-color: lightgray
     }
+    :host([speaker]) {
+      border: 5px solid red;
+    }
+    :host([detached]){
+      border: 5px dotted gray;
+    }
   `,
   DiaSlideStyles = css`
     :host {
