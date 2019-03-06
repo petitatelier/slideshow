@@ -25,6 +25,11 @@ export class DiaPo extends LitElement {
 
   constructor() {
     super();
+
+    // Register event listeners
+    this.addEventListener( "click", this._onClick);
+
+    // Public observed properties
     this.display = undefined;
     this.parentSlide = undefined;
     this.activeSlide = undefined;
@@ -32,19 +37,21 @@ export class DiaPo extends LitElement {
     this.hidden = false;
   }
 
-  firstUpdated() {
-    // Fires a 'slide-selected' with the selected slide and a 'display-selected'
-    // event with the selected display when the `dia-po` is clicked.
-    this.addEventListener("click", () => {
-      var eventSlide = new CustomEvent("slide-selected", {
-        detail: { slide: this.parentSlide }, bubbles: true, composed: true
-      });
-      this.dispatchEvent(eventSlide);
-      var eventDisplay = new CustomEvent("display-selected", {
-        detail: { display: this.display }, bubbles: true, composed: true
-      });
-      this.dispatchEvent(eventDisplay);
-     });
+  // When a ‹dia-po› is clicked and we are in « summary / contact
+  // sheet », dispatch the `slide-selected` and `display-selected`
+  // events towards ‹dia-show›, to request it to switch to the
+  // combination of slide/display linked to the diapo.
+  _onClick( e) {
+    // TODO: noop when not in « summary / contact sheet »
+    e.stopPropagation();
+    this.dispatchEvent( new CustomEvent( "slide-selected", {
+      detail: { slide: this.parentSlide },
+      bubbles: true, composed: true
+    }));
+    this.dispatchEvent( new CustomEvent("display-selected", {
+      detail: { display: this.display },
+      bubbles: true, composed: true
+    }));
   }
 
   updated( changedProperties) {

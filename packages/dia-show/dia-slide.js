@@ -24,21 +24,27 @@ export class DiaSlide extends LitElement {
 
   constructor() {
     super();
+
+    // Register event listeners
+    this.addEventListener( "click", this._onClick);
+
+    // Public observed properties
     this.id = undefined;
     this.activeSlide = undefined;
     this.activeDisplay = undefined;
     this.hidden = false;
   }
 
-  firstUpdated() {
-    // Dispatch a 'slide-selected' event when the slide is clicked.  The detail
-    // contains the `id` of the clicked slide.
-    this.addEventListener("click", () => {
-      var event = new CustomEvent("slide-selected", {
-        detail: { slide: this.id }, bubbles: true, composed: true
-      });
-      this.dispatchEvent(event);
-     });
+  // When a ‹dia-slide› is clicked and we are in « summary / contact
+  // sheet », dispatch a `slide-selected` event towards ‹dia-show›,
+  // to request it to switch to the slide clicked.
+  _onClick( e) {
+    // TODO: noop when not in « summary / contact sheet »
+    e.stopPropagation();
+    this.dispatchEvent( new CustomEvent("slide-selected", {
+      detail: { slide: this.id },
+      bubbles: true, composed: true
+    }));
   }
 
   updated( changedProperties) {
