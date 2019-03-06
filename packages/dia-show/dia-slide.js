@@ -8,10 +8,18 @@ export class DiaSlide extends LitElement {
 
   static get properties() {
     return {
-      id: { type: String },
+      // Public observed property/attribut, set by the slideshow author
+      id: { type: String },   // Identifier of the slides (must be unique among all slides)
+
+      // Computed property, set by parent ‹dia-slide›, reflected
+      // to an attribute, to allow CSS selectors to act upon it
+      hidden: { type: Boolean, reflect: true },
+
+      // Computed properties, set by parent ‹dia-show›, with no
+      // linked attribute; we want to set/read/observe them, but
+      // not expose them as attributes in the DOM
       activeSlide: { type: String, attribute: false },
-      activeDisplay: { type: String, attribute: false },
-      hidden: { type: Boolean, reflect: true }
+      activeDisplay: { type: String, attribute: false }
     }
   }
 

@@ -9,11 +9,19 @@ export class DiaShow extends LitElement {
 
   static get properties() {
     return {
+      // The two properties/attributes `slide` and `display` are initially
+      // set by the slideshow author, to define the slide/display first
+      // displayed (defaults to first slide, first display, when left
+      // undefined); subsequently set by the keyboard or remote controller.
+
       // Active slide (varies when speaker asks next/previous slide);
-      // filters out other slides
+      // filters out/hides other slides.
       slide: { type: String, reflect: true },
-      // Active display (remains fixed, once set); filters out
-      // all diapositives that are bound to other displays
+
+      // Active display (usually remains fixed, once set, although the
+      // remote controller might change it for the audience, which has
+      // only target display); filters out/hides all diapositives that
+      // are bound to other displays.
       display: { type: String, reflect: true }
     }
   }

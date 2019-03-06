@@ -20,8 +20,11 @@ const
   DiaPoStyles = css`
     :host {
       display: flex; flex-direction: column;
-      flex-grow: 1;
-      background-color: green }
+      flex-grow: 1; box-sizing: border-box;
+      background-color: green;
+      border: 1px dashed black }
+    :host([ default]) {
+      border: 2px solid red }
   `;
 
 export {

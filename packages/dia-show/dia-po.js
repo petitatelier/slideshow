@@ -8,11 +8,20 @@ export class DiaPo extends LitElement {
 
   static get properties() {
     return {
-      display: { type: String },
+      // Public observed properties/attributes, set by slideshow author
+      display: { type: String },    // Target display of the diapositive
+      default: { type: Boolean },   // Diapositive displayed to audience (which has a single display)
+
+      // Computed property, set by parent ‹dia-slide›, reflected
+      // to an attribute, to allow CSS selectors to act upon it
+      hidden: { type: Boolean, reflect: true },
+
+      // Computed properties, set by parent ‹dia-slide›, with no
+      // linked attribute; we want to set/read/observe them, but
+      // not expose them as attributes in the DOM
       parentSlide: { type: String, attribute: false },
       activeSlide: { type: String, attribute: false },
       activeDisplay: { type: String, attribute: false },
-      hidden: { type: Boolean, reflect: true }
     }
   }
 
@@ -31,10 +40,11 @@ export class DiaPo extends LitElement {
 
     // Public observed properties
     this.display = undefined;
+    this.default = false;
+    this.hidden = false;
     this.parentSlide = undefined;
     this.activeSlide = undefined;
     this.activeDisplay = undefined;
-    this.hidden = false;
   }
 
   // When a ‹dia-po› is clicked and we are in « summary / contact
