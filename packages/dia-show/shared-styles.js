@@ -42,8 +42,10 @@ const
     span.item {
       padding: 0 0.5em;
       cursor: pointer }
-    span.item:hover {
-      color: blue }
+    span.item:hover { text-decoration: underline }
+    span.item:hover,
+    span.item[ selected] { color: blue }
+    }
   `;
 
 export {

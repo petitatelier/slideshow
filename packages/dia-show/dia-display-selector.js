@@ -8,32 +8,37 @@ export class DiaDisplaySelector extends LitElement {
 
   static get properties() {
     return {
-      displayList: { type: Object, attribute: false } // an object of type `Set` actually
+      displayList: { type: Set, attribute: false }, // An object of type `Set` actually
+      selectedDisplayId: { type: String, attribute: false } // Identifier of the selected display
     }
   }
 
   render() {
     return html`<div class="select">${
         Array.from( this.displayList.values())
-          .map(( display) =>
-            html`<span id="${display}" class="item"
-                       @click=${this._onSelected}>${display}</span>`)
+          .map(( displayId) =>
+            html`<span id="${displayId}" class="item"
+                       ?selected="${(displayId === this.selectedDisplayId)}"
+                       @click=${this._onSelected}>${displayId}</span>`)
       }</div>`;
   }
 
   constructor() {
     super();
     this.displayList = new Set();
+    this.selectedDisplayId = undefined;
   }
 
   _onSelected( e) {
-    const selectedDisplay = e.target.id;
+    const selectedDisplayId = e.target.id;
+    console.debug( `dia-display-selector › on-selected: ${selectedDisplayId}`);
     this.dispatchEvent(
       new CustomEvent( "display-selected", {
-        detail: { display: selectedDisplay },
+        detail: { display: selectedDisplayId },
         bubbles: true, composed: true
       })
     );
+    this.selectedDisplayId = selectedDisplayId;
   }
 }
 
