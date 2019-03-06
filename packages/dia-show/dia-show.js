@@ -29,7 +29,8 @@ export class DiaShow extends LitElement {
     super();
 
     // Attach event listeners
-    this.addEventListener( "display-selected", this._displaySelected);
+    this.addEventListener( "display-selected", this._onDisplaySelected);
+    this.addEventListener( "slide-selected", this._onSlideSelected);
 
     // Public observed properties
     this.slide = undefined;
@@ -37,24 +38,6 @@ export class DiaShow extends LitElement {
 
     // Private properties
     this._displayList = this._enumerateDisplays(); // returns a `Set`
-  }
-
-  firstUpdated() {
-    // Sets the new slide when the custom event `slide-selected` is fired from a child.
-    this.addEventListener("slide-selected", (e) => {
-      e.stopPropagation();
-      if(this.slide == undefined){
-        this.slide = e.detail.slide;
-      }
-    });
-
-    // Sets the new display when the custom event `display-selected` is fired from a child.
-    this.addEventListener("display-selected", (e) => {
-      e.stopPropagation();
-      if(this.display == undefined){
-        this.display = e.detail.display;
-      }
-    });
   }
 
   updated( changedProperties) {
@@ -131,11 +114,20 @@ export class DiaShow extends LitElement {
     return displays;
   }
 
-  _displaySelected( e) {
-    e.stopPropagation();
+  // Sets the active display when the custom event `display-selected` is fired from a child.
+  _onDisplaySelected( e) {
     const selectedDisplay = e.detail.display;
-    console.log( `dia-show › _displaySelected(): ${selectedDisplay}`);
+    console.log( `dia-show › on-display-selected: ${selectedDisplay}`);
     this.display = selectedDisplay;
+    e.stopPropagation();
+  }
+
+  // Sets the active slide when the custom event `slide-selected` is fired from a child.
+  _onSlideSelected( e) {
+    const selectedSlide = e.detail.slide;
+    console.log( `dia-show › on-slide-selected: ${selectedSlide}`);
+    this.slide = selectedSlide;
+    e.stopPropagation();
   }
 }
 
