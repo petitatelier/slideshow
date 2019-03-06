@@ -7,7 +7,7 @@
   "scripts": {
     "bootstrap": "npm install && ./scripts/bootstrap.sh",
     "dev": "polyserve --npm --module-resolution=node --open-path=demos/index.html --hostname $npm_package_config_http_server_host --port $npm_package_config_http_server_port",
-    "watch": "npm run dev & browser-sync http://$npm_package_config_http_server_host:$npm_package_config_http_server_port --files \"./packages/**/*,./demos/**/*\"",
+    "watch": "npm run dev & browser-sync http://$npm_package_config_http_server_host:$npm_package_config_http_server_port --no-open --files \"./packages/**/*,./demos/**/*\"",
     "publish": "npx lerna publish"
   },
   "config": {
