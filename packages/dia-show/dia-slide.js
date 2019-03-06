@@ -39,7 +39,9 @@ export class DiaSlide extends LitElement {
   // sheet », dispatch a `slide-selected` event towards ‹dia-show›,
   // to request it to switch to the slide clicked.
   _onClick( e) {
-    // TODO: noop when not in « summary / contact sheet »
+    // Noop when on a single slide, that is, not on « contact sheet »
+    // (as ‹dia-show›'s updated handler won't be called by Lit-Element,
+    // if we don't actually change slide)
     e.stopPropagation();
     this.dispatchEvent( new CustomEvent("slide-selected", {
       detail: { slide: this.id },

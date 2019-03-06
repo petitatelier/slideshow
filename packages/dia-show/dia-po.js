@@ -42,7 +42,9 @@ export class DiaPo extends LitElement {
   // events towards ‹dia-show›, to request it to switch to the
   // combination of slide/display linked to the diapo.
   _onClick( e) {
-    // TODO: noop when not in « summary / contact sheet »
+    // Noop when on a single slide/display, that is, not on « contact sheet »
+    // (as ‹dia-show›'s updated handler won't be called by Lit-Element,
+    // if we don't actually change slide/display)
     e.stopPropagation();
     this.dispatchEvent( new CustomEvent( "slide-selected", {
       detail: { slide: this.parentSlide },
