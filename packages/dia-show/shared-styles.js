@@ -2,7 +2,7 @@ import { css } from "lit-element";
 
 const
   CommonStyles = css`
-    :host([hidden]) { display: none }
+    :host([ hidden]) { display: none }
   `,
   DiaShowStyles = css`
     :host {
