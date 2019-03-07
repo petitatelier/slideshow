@@ -145,7 +145,7 @@ export default class DiaControllerRemoteFirebase extends LitElement {
   updateAudienceStats(head){
     if(!this._user){ return; }
     console.log("Update audience state");
-    const docId = this._user.isAnonymous ? "A_"+this._user.uid : this._user.uid;
+    const docId = this._user.isAnonymous ? "A_"+this._user.uid : this._user.email;
     this._db.collection("audience").doc(docId).set({
       "head:slide": head,
       displayName: this._user.displayName,
