@@ -58,7 +58,7 @@ export class DiaSlide extends LitElement {
   }
 
   updated( changedProperties) {
-    console.log( `dia-slide[${this.id}] › updated()`, changedProperties);
+    console.debug( `dia-slide[${this.id}] › updated()`, changedProperties);
     if( changedProperties.has( "activeSlide")) {
       this._updatedActiveSlide();
     }

@@ -67,7 +67,7 @@ export class DiaPo extends LitElement {
   }
 
   updated( changedProperties) {
-    console.log( `dia-po[${this.parentSlide}:${this.display}] › updated()`, changedProperties);
+    console.debug( `dia-po[${this.parentSlide}:${this.display}] › updated()`, changedProperties);
     if( changedProperties.has( "activeSlide")
         || changedProperties.has( "activeDisplay")) {
       this._updatedActiveSlideOrDisplay();

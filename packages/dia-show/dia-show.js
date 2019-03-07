@@ -1,6 +1,5 @@
 import { LitElement, html } from "lit-element";
 import { CommonStyles, DiaShowStyles } from "./shared-styles.js";
-import { registerKeyboardListeners } from "./dia-controller-keyboard.js";
 
 export class DiaShow extends LitElement {
   static get styles() {
@@ -17,12 +16,18 @@ export class DiaShow extends LitElement {
       // Active slide (varies when speaker asks next/previous slide);
       // filters out/hides other slides.
       slide: { type: String, reflect: true },
-
       // Active display (usually remains fixed, once set, although the
       // remote controller might change it for the audience, which has
       // only target display); filters out/hides all diapositives that
       // are bound to other displays.
-      display: { type: String, reflect: true }
+      display: { type: String, reflect: true },
+      // Used to know if the user is a speaker or not
+      speaker: { type: Boolean, reflect: true },
+      // Used to know if the user in the detached mode or not
+      detached: { type: Boolean, reflect: true},
+      // Current slide/display of a speaker or member of the audience;
+      // detached head is specific to every slideshow player instance;
+      //detachedHead: { type: String, attribute: "detached-head", reflect: true},
     }
   }
 
@@ -31,6 +36,7 @@ export class DiaShow extends LitElement {
       <div>‹dia-show slide ${this.slide}, display ${this.display}›</div>
       <dia-display-selector .displayList=${this._displayList}></dia-display-selector>
       <button id="cloneWindow" @click=${this._onCloneWindowClicked}>Clone window</button>
+      <dia-controller head="${this.slide}" ?speaker="${this.speaker}" ?detached="${this.detached}"></dia-controller>
       <slot></slot>
     `;
   }
@@ -48,9 +54,14 @@ export class DiaShow extends LitElement {
     // Attach event listeners
     this.addEventListener( "display-selected", this._onDisplaySelected);
     this.addEventListener( "slide-selected", this._onSlideSelected);
-    registerKeyboardListeners( this);
+    this.addEventListener( "speaker-toggled", this._onSpeakerToggled);
+    this.addEventListener( "detach-enabled", this._onDetachEnabled);
+    this.addEventListener( "detach-disabled", this._onDetachDisabled);
+    this.addEventListener( "fullscreen-enabled", this._onFullscreenEnabled);
 
     // Public observed properties
+    this.speaker = false;
+    this.detached = false;
     this.slide = undefined;
     this.display = undefined;
 
@@ -61,6 +72,11 @@ export class DiaShow extends LitElement {
 
   disconnectedCallback() {
     this._dispose();
+  }
+
+  firstUpdated(){
+    this._controller = this.shadowRoot.querySelector("dia-controller");
+    this._controller.target = this;
   }
 
   updated( changedProperties) {
@@ -99,36 +115,6 @@ export class DiaShow extends LitElement {
       .selectedDisplayId = activeDisplayId;
   }
 
-  moveTo( slide, display) {
-    console.log( "dia-show › moveTo()", slide, display);
-    this.slide = slide != null ? slide : undefined; // cast null to undefined
-    this.display = display != null ? display : undefined; // cast null to undefined
-  }
-
-  // Sets the next slide as the current one.
-  next() {
-    if(this.slide === null) { return; }
-    var slide = this.querySelectorAll( `dia-slide[id="${this.slide}"]`)[0];
-    var nextSlide = slide.nextElementSibling;
-    if(nextSlide != null && nextSlide.tagName == "DIA-SLIDE"){
-      this.slide = nextSlide.getAttribute("id");
-    }
-  }
-
-  // Sets the previous slide as the current one.
-  previous() {
-    if(this.slide === null) { return; }
-    var slide = this.querySelectorAll( `dia-slide[id="${this.slide}"]`)[0];
-    var prevSlide = slide.previousElementSibling;
-    if(prevSlide != null && prevSlide.tagName == "DIA-SLIDE"){
-      this.slide = prevSlide.getAttribute("id");
-    }
-  }
-
-  fullscreen() {
-    this.requestFullscreen();
-  }
-
   // Returns a `Set` of distinct display identifiers used
   // on child ‹dia-po› elements
   _enumerateDisplays() {
@@ -158,6 +144,29 @@ export class DiaShow extends LitElement {
     const selectedSlide = e.detail.slide;
     console.log( `dia-show › on-slide-selected: ${selectedSlide}`);
     this.slide = selectedSlide;
+    e.stopPropagation();
+  }
+
+  // Enables the speaker mode when the custom event `speaker-enabled` is fired from a child.
+  _onSpeakerToggled( e) {
+    this.speaker = !this.speaker;
+    e.stopPropagation();
+  }
+
+  // Enables the detached mode when the custom event `detach-enabled` is fired from a child.
+  _onDetachEnabled( e) {
+    this.detached = true;
+    e.stopPropagation();
+  }
+
+  // Disables the detached mode when the custom event `detach-enabled` is fired from a child.
+  _onDetachDisabled( e) {
+    this.detached = false;
+    e.stopPropagation();
+  }
+
+  _onFullscreenEnabled( e) {
+    this.requestFullscreen();
     e.stopPropagation();
   }
 
