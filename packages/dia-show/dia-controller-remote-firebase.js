@@ -1,10 +1,23 @@
-import { LitElement } from "lit-element";
+import { LitElement, html } from "lit-element";
 
 export default class DiaControllerRemoteFirebase extends LitElement {
   static get properties() {
     return {
-      roomId: { type: String, attribute: "room-id" } // RoomId to listen in order to get the correct `head:slide`
+      roomId: { type: String, attribute: "room-id" }, // RoomId to listen in order to get the correct `head:slide`
+      photoURL: {type: String }
     }
+  }
+
+  render() {
+    return html`
+			<style>
+        img { margin-bottom: -5px; }
+        button[hidden] { display: none; }
+			</style>
+			<img src="${this.photoURL}" width=20 height=20></img>
+      <button id="login">LogIn</button>
+      <button id="logout" hidden>Logout</button>
+    `
   }
 
   constructor() {
@@ -25,6 +38,9 @@ export default class DiaControllerRemoteFirebase extends LitElement {
 			messagingSenderId: "154605865517"
 		};
 
+    // The connected user
+    this._user = undefined;
+
     this.initFirebase(this._firebaseConfig);
     this.initFirebaseAuth();
     this.initFirebaseDB();
@@ -35,31 +51,73 @@ export default class DiaControllerRemoteFirebase extends LitElement {
 		window.firebase.initializeApp(config);
   }
 
-  // Login in anonymous mode
+  // Listen to login state changes
   initFirebaseAuth(){
-		window.firebase.auth().signInAnonymously().catch(function(error) {
-			// Handle Errors here.
-      // let errorCode = error.code;
-      // let errorMessage = error.message;
-			// ...
-		});
-		window.firebase.auth().onAuthStateChanged(function(user) {
+    window.firebase.auth().onAuthStateChanged((user) => {
 			if (user) {
-				// User is signed in.
-				let isAnonymous = user.isAnonymous;
-				let uid = user.uid;
-        if(isAnonymous) {
-          console.warn( "User is anonymous", uid);
+        if(!user.isAnonymous){
+          this._displayLoginButton(false);
         }
 			} else {
         console.warn("User is not logged in");
+        this._firebaseLoginAnonymously();
 			}
+      this._updateUser(user);
 		});
+  }
+
+  _firebaseLoginAnonymously(){
+    window.firebase.auth().signInAnonymously().catch((error) => {
+		});
+  }
+
+  _firebaseLoginGoogle() {
+    const provider = new window.firebase.auth.GoogleAuthProvider();
+    window.firebase.auth().signInWithPopup(provider).then((result) => {
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      // var token = result.credential.accessToken;
+    }).catch(function(error) {
+      throw error;
+    });
+  }
+
+  _firebaseLogoutGooge() {
+		window.firebase.auth().signOut().then(function() {
+			// Sign-out successful.
+      this._updateUser(undefined);
+		}).catch(function(error) {
+			// An error happened.
+		});
+  }
+
+  _updateUser(googleUser) {
+    this._user = googleUser;
+    this.photoURL = "https://petit-atelier.ch/images/petit-atelier-logo.svg"
+    if(googleUser && googleUser.photoURL){
+      this.photoURL = googleUser.photoURL;
+    }
+  }
+
+  _displayLoginButton(b) {
+    if(b) {
+      this.shadowRoot.querySelector("button[id='logout']").setAttribute("hidden", "");
+      this.shadowRoot.querySelector("button[id='login']").removeAttribute("hidden");
+    } else {
+      this.shadowRoot.querySelector("button[id='login']").setAttribute("hidden", "");
+      this.shadowRoot.querySelector("button[id='logout']").removeAttribute("hidden");
+    }
   }
 
   // Firestore cloud database
   initFirebaseDB() {
     this._db = window.firebase.firestore();
+  }
+
+  firstUpdated(){
+    const buttonLogin = this.shadowRoot.querySelector("button[id='login']");
+    buttonLogin.addEventListener("click", () => { this._firebaseLoginGoogle(); });
+    const buttonLogout = this.shadowRoot.querySelector("button[id='logout']");
+    buttonLogout.addEventListener("click", () => { this._firebaseLogoutGooge(); });
   }
 
   updated(changedProperties) {
@@ -79,9 +137,20 @@ export default class DiaControllerRemoteFirebase extends LitElement {
     });
   }
 
-  updateSlideHead(slideId){
+  updateLiveHead(slideId){
     console.log("Firebase > updating the current `head:slide` to", slideId);
     this._db.collection("live").doc(this.roomId).update({"head:slide": slideId})
+  }
+
+  updateAudienceStats(head){
+    if(!this._user){ return; }
+    console.log("Update audience state");
+    const docId = this._user.isAnonymous ? "A_"+this._user.uid : this._user.uid;
+    this._db.collection("audience").doc(docId).set({
+      "head:slide": head,
+      displayName: this._user.displayName,
+      isAnonymous: this._user.isAnonymous
+    });
   }
 }
 

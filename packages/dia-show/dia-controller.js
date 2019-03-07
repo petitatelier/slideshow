@@ -2,6 +2,12 @@ import { LitElement, html } from "lit-element";
 import controllerKeyboard from "./dia-controller-keyboard.js";
 import controllerRemoteFirbase from "./dia-controller-remote-firebase.js";
 
+// TODO:
+// [ ] Login to google
+// [ ] Send the user current head to firebase
+// [ ] Detached head is not synched
+
+
 export default class DiaController extends LitElement {
 
   static get properties() {
@@ -48,23 +54,34 @@ export default class DiaController extends LitElement {
   }
 
   updated(changedProperties){
-    if( changedProperties.has( "head", "detached", "liveHead")) {
-      // Speakers actions
+    if( changedProperties.has( "head") || changedProperties.has( "speaker") || changedProperties.has( "detached")) {
+      // Actions for speakers
       //
       // Propagates the current head to the remote controller when
       // the speaker is not in the detached mode.
       if(this.speaker && !this.detached){
-        this._remoteController.updateSlideHead(this.head);
+        this._remoteController.updateLiveHead(this.head);
       }
 
-      // Non speakers actions
+      // Actions for non-speakers
       //
       // Set the detached mode when the `liveHead` differs from the user `head`
       // and the detached mode was not previously set (sanity)
       if(!this.speaker && this.liveHead != this.head && this.liveHead != undefined && !this.detached) {
         this.detach();
       }
+
+      // Actions for all
+      //
+      // Synchronize the deatched head with the current user active slide when
+      // in detached mode.
+      if(this.detached){
+        this.detachedHead = this.head;
+      }
+      // Tracks the users head
+      this._remoteController.updateAudienceStats(this.head);
     }
+
     if( changedProperties.has( "target") && this.target != undefined) {
       this._keyboardController.registerKeyboardListeners( this.target);
     }
@@ -139,6 +156,13 @@ export default class DiaController extends LitElement {
     this.__dispatchEvt("speaker-toggled");
   }
 
+  focus(){
+    if(this.speaker && this.detached) {
+      this._remoteController.updateLiveHead(this.head);
+      this.__dispatchEvt("detach-disabled");
+    }
+  }
+
   _onLiveHeadUpdated(e){
     const prevLiveHead = this.liveHead;
     this.liveHead = e.detail.liveHead;
@@ -159,12 +183,6 @@ export default class DiaController extends LitElement {
     }));
   }
 
-  focus(){
-    if(this.speaker && this.detached) {
-      this._remoteController.updateSlideHead(this.head);
-      this.__dispatchEvt("detach-disabled");
-    }
-  }
 
 }
 
