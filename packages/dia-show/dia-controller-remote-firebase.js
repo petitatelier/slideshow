@@ -160,7 +160,7 @@ export default class DiaControllerRemoteFirebase extends LitElement {
 
   updateAudienceStats(head){
     if(head) { this.head = head; } // register the user current head in case he logs in
-    if(this._user == undefined || this._user.uid != null || head == undefined){ return; }
+    if(this._user == undefined || this._user.uid == undefined || head == undefined){ return; }
     console.log("Update user audience head", head);
     const docId = this._user.isAnonymous ? "A_"+this._user.uid : this._user.email;
     this._db.collection("audience").doc(docId).set({
