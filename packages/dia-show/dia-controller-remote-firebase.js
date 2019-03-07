@@ -70,13 +70,11 @@ export default class DiaControllerRemoteFirebase extends LitElement {
   initFirebaseAuth(){
     window.firebase.auth().onAuthStateChanged((user) => {
 			if (user) {
-        if(!user.isAnonymous){
-          this._displayLoginButton(false);
-        }
 			} else {
         console.warn("User is not logged in");
         this._firebaseLoginAnonymously();
 			}
+      this._displayLoginButton(user && user.isAnonymous);
       this._updateUser(user);
       this.updateAudienceStats(this.head);
 		});
@@ -155,7 +153,6 @@ export default class DiaControllerRemoteFirebase extends LitElement {
   }
 
   updateLiveHead(head){
-    console.log(head);
     if( head == undefined) { return; }
     console.log("Firebase > updating the current `head` to", head);
     this._db.collection("live").doc(this.roomId).update({"head:slide": head.slide, "head:display": head.display})
@@ -163,8 +160,8 @@ export default class DiaControllerRemoteFirebase extends LitElement {
 
   updateAudienceStats(head){
     if(head) { this.head = head; } // register the user current head in case he logs in
-    if(this._user == undefined || head == undefined){ return; }
-    console.warn("Update user audience head", head);
+    if(this._user == undefined || this._user.uid != null || head == undefined){ return; }
+    console.log("Update user audience head", head);
     const docId = this._user.isAnonymous ? "A_"+this._user.uid : this._user.email;
     this._db.collection("audience").doc(docId).set({
       "head:slide": head.slide,

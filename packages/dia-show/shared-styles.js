@@ -32,10 +32,8 @@ const
       flex-grow: 1;
       box-sizing: border-box;
       border: 2px solid #ccc;
-      opacity: 0.5;
     }
     :host(:focus) {
-      opacity: 1;
       outline: none;
       border: 2px solid transparent;
     }
@@ -60,11 +58,13 @@ const
     }
 
     dia-controller {
-      opacity: 0.9;
+      opacity: 0.95;
       display: flex;
       flex-direction: row;
       align-items: end;
       padding: 5px;
+      background-color: white;
+      box-shadow: 1px 1px 5px 1px #efefef;
     }
     dia-controller > * {
       margin-right: 5px;
@@ -72,7 +72,7 @@ const
 
     :host(:not(:fullscreen)) dia-controller {
       position: absolute;
-      top: 5px; right: 5px;
+      top: 0px; right: 0px;
     }
 
     /* INFO */
@@ -105,6 +105,7 @@ const
     :host {
       display: flex; flex-direction: column;
       flex-grow: 1; box-sizing: border-box;
+      background-color: var(--background-color, white);
     }
     :host([ default]) {
       box-shadow: 1px 1px 5px 1px #dfdfdf;
