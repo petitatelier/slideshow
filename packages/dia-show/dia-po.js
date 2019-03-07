@@ -27,8 +27,9 @@ export class DiaPo extends LitElement {
 
   render() {
     return html`
-      <div>‹dia-po ${this.display}›</div>
-      <slot></slot>
+      <slot>
+        <div>‹dia-po ${this.display}›</div>
+      </slot>
     `;
   }
 

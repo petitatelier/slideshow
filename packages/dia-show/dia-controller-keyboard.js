@@ -9,7 +9,7 @@ const KEYBOARD_BINDINGS = Object.freeze({
   NEXT: {code: "ArrowRight"},
   PREVIOUS: {code: "ArrowLeft"},
   RESYNC: {code: "Space"},
-  TOGGLESPEAKER: {code: "KeyS"},
+  TOGGLESPEAKER: {ctrlKey: true, altKey: true, code: "KeyS"},
   FOCUS: {code: "Space", ctrlKey: true},
 });
 
@@ -48,7 +48,9 @@ export default class DiaControllerKeyboard extends LitElement {
    */
   getAction(e) {
     const action = Object.keys(KEYBOARD_BINDINGS).find( (action) => {
-      return e.code == KEYBOARD_BINDINGS[action].code && e.ctrlKey == (KEYBOARD_BINDINGS[action].ctrlKey || false);
+      return e.code == KEYBOARD_BINDINGS[action].code
+        && e.ctrlKey == (KEYBOARD_BINDINGS[action].ctrlKey || false)
+        && e.altKey == (KEYBOARD_BINDINGS[action].altKey || false);
     })
     return action;
   }

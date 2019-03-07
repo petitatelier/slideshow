@@ -1,6 +1,7 @@
 import { LitElement, html } from "lit-element";
 import controllerKeyboard from "./dia-controller-keyboard.js";
 import controllerRemoteFirbase from "./dia-controller-remote-firebase.js";
+import { DiaControllerStyles } from "./shared-styles.js";
 
 // TODO:
 // [ ] Login to google
@@ -9,29 +10,37 @@ import controllerRemoteFirbase from "./dia-controller-remote-firebase.js";
 
 
 export default class DiaController extends LitElement {
+  static get styles() {
+    return [ DiaControllerStyles ];
+  }
 
   static get properties() {
     return {
-      target:       { type: Object }, // The target to bind to (eg: keyboard events, clicks, ...)
-      head:         { type: String, attribute: true}, // the current (alias of active-slide)
-      liveHead:     { type: String, attribute: "live-head"},
-      detachedHead: { type: String, attribute: "detached-head"},
-      speaker:      { type: Boolean },
-      detached:     { type: Boolean },
+      slide:         { type: String },
+      display:       { type: String },
+      speaker:       { type: Boolean },
+      detached:      { type: Boolean },
+      target:        { type: Object }, // The target to bind to (eg: keyboard events, clicks, ...)
+      _head:         { type: Object, attribute: true},
+      _liveHead:     { type: String, attribute: "live-head"},
+      _detachedHead: { type: String, attribute: "detached-head"},
     }
   }
 
   render() {
     return html`
-      ‹dia-controller head: ${this.head} liveHead: ${this.liveHead} detachedHead: ${this.detachedHead}›
+      <slot></slot>
       <dia-controller-keyboard></dia-controller-keyboard>
       <dia-controller-remote-firebase room-id="room:main"></dia-controller-remote-firebase>
+      <slot name="after"></slot>
     `;
   }
 
   constructor(){
     super();
-    this.head         = undefined;
+    this.slide        = undefined;
+    this.display      = undefined;
+    this.head         = {slide: undefined, display: undefined};
     this.liveHead     = undefined;
     this.detachedHead = undefined;
     this.detached     = false;
@@ -54,20 +63,31 @@ export default class DiaController extends LitElement {
   }
 
   updated(changedProperties){
-    if( changedProperties.has( "head") || changedProperties.has( "speaker") || changedProperties.has( "detached")) {
-      // Actions for speakers
-      //
-      // Propagates the current head to the remote controller when
-      // the speaker is not in the detached mode.
-      if(this.speaker && !this.detached){
-        this._remoteController.updateLiveHead(this.head);
-      }
+    if( changedProperties.has( "slide")) {
+      this.head.slide = this.slide;
+    }
+    if( changedProperties.has( "display")) {
+      this.head.display = this.display
+    }
+    if( changedProperties.has( "slide") || changedProperties.has("display")){
+      // Tracks the users head
+      this._remoteController.updateAudienceStats(this.head);
+    }
+
+    if( changedProperties.has( "slide")
+      || changedProperties.has( "speaker")
+      || changedProperties.has( "liveHead")
+      || changedProperties.has( "detached")) {
 
       // Actions for non-speakers
       //
       // Set the detached mode when the `liveHead` differs from the user `head`
       // and the detached mode was not previously set (sanity)
-      if(!this.speaker && this.liveHead != this.head && this.liveHead != undefined && !this.detached) {
+      if(!this.speaker &&
+         this.liveHead &&
+         this.liveHead.slide != this.slide &&
+         this.liveHead != undefined && !this.detached) {
+        console.log("DETACHED", this.liveHead, this.head);
         this.detach();
       }
 
@@ -78,8 +98,6 @@ export default class DiaController extends LitElement {
       if(this.detached){
         this.detachedHead = this.head;
       }
-      // Tracks the users head
-      this._remoteController.updateAudienceStats(this.head);
     }
 
     if( changedProperties.has( "target") && this.target != undefined) {
@@ -90,23 +108,51 @@ export default class DiaController extends LitElement {
   // Set the next slide as the current one.
   next() {
     if(this.target.slide == undefined) { return; }
-    const slide = this.target.querySelectorAll( `dia-slide[id="${this.head}"]`)[0];
+    const slide = this.target.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[0];
     const nextSlide = slide.nextElementSibling;
     if(nextSlide != null && nextSlide.tagName == "DIA-SLIDE"){
       const nextSlideID = nextSlide.getAttribute("id");
       this.__dispatchEvt("slide-selected", {slide: nextSlideID});
+      const defaultDisplayID = this._getDefaultDisplayOfSlide(nextSlide);
+
+      // Do not change the display if we are in speaker mode
+      if(!this.speaker) {
+        this.__dispatchEvt("display-selected", {display: defaultDisplayID});
+      }
+
+      // Updates the live head of the audience using the speaker next slide and the defaultDisplayID
+      if(this.speaker && !this.detached){
+        this._remoteController.updateLiveHead({slide: nextSlideID, display: defaultDisplayID});
+      }
     }
   }
 
   // Set the previous slide as the current one.
   previous() {
     if(this.target.slide == undefined) { return; }
-    var slide = this.target.querySelectorAll( `dia-slide[id="${this.head}"]`)[0];
+    var slide = this.target.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[0];
     var prevSlide = slide.previousElementSibling;
     if(prevSlide != null && prevSlide.tagName == "DIA-SLIDE"){
       const prevSlideID = prevSlide.getAttribute("id");
       this.__dispatchEvt("slide-selected", {slide: prevSlideID});
+      const defaultDisplayID = this._getDefaultDisplayOfSlide(prevSlide);
+
+      // Do not change the display if we are in speaker mode
+      if(!this.speaker) {
+        this.__dispatchEvt("display-selected", {display: defaultDisplayID});
+      }
+
+      // Updates the live head of the audience using the speaker previous slide and the defaultDisplayID
+      if(this.speaker && !this.detached){
+        this._remoteController.updateLiveHead({slide: prevSlideID, display: defaultDisplayID});
+      }
     }
+  }
+
+  // Search for the dia-po that has the `default` attribute
+  _getDefaultDisplayOfSlide(slideElement) {
+    const defaultDiaPo = slideElement.querySelector( "dia-po[default]")
+    return defaultDiaPo.getAttribute("display");
   }
 
   // Move to the specified slide and/or display
@@ -118,18 +164,18 @@ export default class DiaController extends LitElement {
 
   // Move to the specified slide
   moveToSlide( slide) {
-    this.target.slide = slide != null ? slide : undefined; // cast null to undefined
+    this.__dispatchEvt("slide-selected", {slide: slide});
   }
 
   // Move to the specified display
   moveToDisplay( display) {
-    this.target.display = display != null ? display : undefined; // cast null to undefined
+    this.__dispatchEvt("display-selected", {display: display});
   }
 
   // Detach from the head
   detach(){
     if(this.detached) {
-      this.moveTo(undefined, undefined);
+      this.moveTo(null, null);
     } else {
       this.__dispatchEvt("detach-enabled");
       this.detachedHead = this.head;
@@ -140,10 +186,14 @@ export default class DiaController extends LitElement {
     console.log("Controller > resynchronized with liveHead");
     this.detachedHead = undefined;
     this.__dispatchEvt("detach-disabled");
-    if( this.speaker && this.liveHead == this.head) {
+    if( this.speaker && this.liveHead.slide == this.head.slide) {
       this.next();
     } else {
-      this.__dispatchEvt("slide-selected", {slide: this.liveHead});
+      if(this.speaker){
+        this.moveToSlide(this.liveHead.slide);
+      } else {
+        this.moveTo(this.liveHead.slide, this.liveHead.display);
+      }
     }
   }
 
@@ -152,8 +202,10 @@ export default class DiaController extends LitElement {
   }
 
   toggleSpeaker(){
-    this.resync();
-    this.__dispatchEvt("speaker-toggled");
+    if(!this.detached){
+      this.__dispatchEvt("speaker-toggled");
+      if(this.head.slide != this.liveHead.slide){this.resync();}
+    }
   }
 
   focus(){
@@ -170,7 +222,11 @@ export default class DiaController extends LitElement {
     if(prevLiveHead == undefined){
       this.resync();
     } else if(!this.detached) {
-      this.moveToSlide(this.liveHead);
+      if(this.speaker) {
+        this.moveToSlide(this.liveHead.slide);
+      } else {
+        this.moveTo(this.liveHead.slide, this.liveHead.display);
+      }
     }
   }
 

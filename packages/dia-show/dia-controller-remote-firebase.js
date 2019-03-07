@@ -1,20 +1,35 @@
 import { LitElement, html } from "lit-element";
+import { CommonStyles } from "./shared-styles.js";
 
 export default class DiaControllerRemoteFirebase extends LitElement {
+  static get styles() {
+    return [ CommonStyles ];
+  }
+
   static get properties() {
     return {
-      roomId: { type: String, attribute: "room-id" }, // RoomId to listen in order to get the correct `head:slide`
-      photoURL: {type: String }
+      roomId:   { type: String, attribute: "room-id" }, // RoomId to listen in order to get the correct `head:slide`
+      photoURL: { type: String },
+      head:     { type: Object}
     }
   }
 
   render() {
     return html`
 			<style>
-        img { margin-bottom: -5px; }
-        button[hidden] { display: none; }
+      :host { display: inline-flex; }
+      :host > * {
+        margin-right: 5px;
+        height: 2em;
+      }
+      img {
+        vertical-align: middle;
+      }
+      button[hidden] {
+        display: none;
+      }
 			</style>
-			<img src="${this.photoURL}" width=20 height=20></img>
+			<img class="small-user-profile" src="${this.photoURL}"></img>
       <button id="login">LogIn</button>
       <button id="logout" hidden>Logout</button>
     `
@@ -63,6 +78,7 @@ export default class DiaControllerRemoteFirebase extends LitElement {
         this._firebaseLoginAnonymously();
 			}
       this._updateUser(user);
+      this.updateAudienceStats(this.head);
 		});
   }
 
@@ -131,23 +147,28 @@ export default class DiaControllerRemoteFirebase extends LitElement {
 		this._db.collection("live").doc(this.roomId).onSnapshot( (doc) => {
       const data = doc.data();
       // this.controller.remoteHeadUpdated(data["head:slide"])
+      console.log("Firebase > Recvd new head", doc.data());
       this.dispatchEvent( new CustomEvent( "live-head-updated", {
-        detail: {liveHead: data["head:slide"]}, bubbles: true, composed: true
+        detail: {liveHead: {slide: data["head:slide"], display: data["head:display"]} }, bubbles: true, composed: true
       }));
     });
   }
 
-  updateLiveHead(slideId){
-    console.log("Firebase > updating the current `head:slide` to", slideId);
-    this._db.collection("live").doc(this.roomId).update({"head:slide": slideId})
+  updateLiveHead(head){
+    console.log(head);
+    if( head == undefined) { return; }
+    console.log("Firebase > updating the current `head` to", head);
+    this._db.collection("live").doc(this.roomId).update({"head:slide": head.slide, "head:display": head.display})
   }
 
   updateAudienceStats(head){
-    if(!this._user){ return; }
-    console.log("Update audience state");
+    if(head) { this.head = head; } // register the user current head in case he logs in
+    if(this._user == undefined || head == undefined){ return; }
+    console.warn("Update user audience head", head);
     const docId = this._user.isAnonymous ? "A_"+this._user.uid : this._user.email;
     this._db.collection("audience").doc(docId).set({
-      "head:slide": head,
+      "head:slide": head.slide,
+      "head:display": head.display,
       displayName: this._user.displayName,
       isAnonymous: this._user.isAnonymous
     });

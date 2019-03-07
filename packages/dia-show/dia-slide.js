@@ -25,8 +25,9 @@ export class DiaSlide extends LitElement {
 
   render() {
     return html`
-      <div>‹dia-slide ${this.id}›</div>
-      <slot></slot>
+      <slot>
+        <div>‹dia-slide ${this.id}›</div>
+      </slot>
     `;
   }
 

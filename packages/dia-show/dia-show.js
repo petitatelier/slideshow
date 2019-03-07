@@ -15,28 +15,38 @@ export class DiaShow extends LitElement {
 
       // Active slide (varies when speaker asks next/previous slide);
       // filters out/hides other slides.
-      slide: { type: String, reflect: true },
+      slide: { type: String, attribute: true, reflect: true },
       // Active display (usually remains fixed, once set, although the
       // remote controller might change it for the audience, which has
       // only target display); filters out/hides all diapositives that
       // are bound to other displays.
-      display: { type: String, reflect: true },
+      display: { type: String, attribute: true, reflect: true },
       // Used to know if the user is a speaker or not
       speaker: { type: Boolean, reflect: true },
       // Used to know if the user in the detached mode or not
       detached: { type: Boolean, reflect: true},
-      // Current slide/display of a speaker or member of the audience;
+      // Current detached slide/display of a speaker or member of the audience;
       // detached head is specific to every slideshow player instance;
-      //detachedHead: { type: String, attribute: "detached-head", reflect: true},
+      detachedHead: { type: String, attribute: "detached-head", reflect: true},
+      // Tells if the user is looking at the dashboard or not
+      dashboard: { type: Boolean, reflect: true}
     }
   }
 
   render() {
     return html`
-      <div>‹dia-show slide ${this.slide}, display ${this.display}›</div>
-      <dia-display-selector .displayList=${this._displayList}></dia-display-selector>
-      <button id="cloneWindow" @click=${this._onCloneWindowClicked}>Clone window</button>
-      <dia-controller head="${this.slide}" ?speaker="${this.speaker}" ?detached="${this.detached}"></dia-controller>
+      <div class="info" title="Slide: ${this.slide}, display: ${this.display}">
+        ${this.detached ? "🔇 Detached" : ""}
+        ${this.speaker ? "🔈 Speaker" : ""}
+      </div>
+      <dia-controller slide="${this.slide}" display="${this.display}" ?speaker="${this.speaker}" ?detached="${this.detached}">
+        <dia-display-selector .displayList=${this._displayList}></dia-display-selector>
+        <button id="cloneWindow" @click=${this._onCloneWindowClicked}>Clone window</button>
+        <span slot="after">
+          <button id="fullscreen" @click="${this.fullscreen}">⛶</button>
+        </span>
+
+      </dia-controller>
       <slot></slot>
     `;
   }
@@ -64,6 +74,7 @@ export class DiaShow extends LitElement {
     this.detached = false;
     this.slide = undefined;
     this.display = undefined;
+    this.dashboard = undefined;
 
     // Private properties
     this._displayList = this._enumerateDisplays(); // returns a `Set`
@@ -85,6 +96,9 @@ export class DiaShow extends LitElement {
     }
     if( changedProperties.has( "display")) {
       this._updatedActiveDisplay();
+    }
+    if( changedProperties.has( "slide") || changedProperties.has("display")){
+      this.dashboard = this.slide == undefined && this.display == undefined;
     }
   }
 
@@ -135,7 +149,7 @@ export class DiaShow extends LitElement {
   _onDisplaySelected( e) {
     const selectedDisplay = e.detail.display;
     console.log( `dia-show › on-display-selected: ${selectedDisplay}`);
-    this.display = selectedDisplay;
+    this.display = selectedDisplay != undefined ? selectedDisplay : null;
     e.stopPropagation();
   }
 
@@ -143,7 +157,7 @@ export class DiaShow extends LitElement {
   _onSlideSelected( e) {
     const selectedSlide = e.detail.slide;
     console.log( `dia-show › on-slide-selected: ${selectedSlide}`);
-    this.slide = selectedSlide;
+    this.slide = selectedSlide != undefined ? selectedSlide : null;
     e.stopPropagation();
   }
 
@@ -166,8 +180,13 @@ export class DiaShow extends LitElement {
   }
 
   _onFullscreenEnabled( e) {
-    this.requestFullscreen();
+    this.fullscreen();
     e.stopPropagation();
+  }
+
+  fullscreen(){
+    this.requestFullscreen();
+    this.focus();
   }
 
   _dispose() {
