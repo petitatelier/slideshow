@@ -1,6 +1,6 @@
 # @petitatelier/dia-show
 
-A multiplex slideshow system, spreading a presentation on multiple displays.
+A multiplex slideshow system, allowing one or more speakers to drive the same presentation, spreading its display on multiple displays — including computers &tablets of the audience.
 
 ## Usage
 
@@ -29,3 +29,23 @@ A multiplex slideshow system, spreading a presentation on multiple displays.
   </dia-slide>
 </dia-show>
 ```
+
+## Adjustment of diapositives to displays
+
+Scale all the diapositives:
+
+```css
+dia-po {
+  transform: scale( 1)
+}
+```
+
+Perspective of the diapositives displayed on projector:
+
+```css
+dia-po[ display="pj01"] {
+  transform: skew( 0, -5deg)
+}
+```
+
+See also: [MDN › CSS › `transform` property](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
