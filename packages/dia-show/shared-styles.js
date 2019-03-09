@@ -106,6 +106,8 @@ const
       display: flex; flex-direction: column;
       flex-grow: 1; box-sizing: border-box;
       background-color: var(--background-color, white);
+      align-items: center;
+      justify-content: center;
     }
     :host([ default]) {
       box-shadow: 1px 1px 5px 1px #dfdfdf;
