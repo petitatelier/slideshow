@@ -1,6 +1,6 @@
 # @petitatelier/dia-show
 
-A multiplex slideshow system, allowing one or more speakers to drive the same presentation, spreading its display on multiple displays — including computers &tablets of the audience.
+A multiplex slideshow system, allowing one or more speakers to drive the same presentation, spreading its display on multiple displays — including computers & tablets of the audience.
 
 ## Usage
 
@@ -8,7 +8,7 @@ A multiplex slideshow system, allowing one or more speakers to drive the same pr
 <dia-show slide="s01" display="proj01">
   <dia-slide id="s01">
     <dia-po display="proj01"></dia-po>
-    <dia-po display="tv01"></dia-po>
+    <dia-po display="tv01" default></dia-po>
     <dia-po display="tv02"></dia-po>
     <dia-po display="pres01"></dia-po>
     <dia-po display="pres02"></dia-po>
@@ -16,13 +16,13 @@ A multiplex slideshow system, allowing one or more speakers to drive the same pr
   <dia-slide id="s02">
     <dia-po display="proj01"></dia-po>
     <dia-po display="tv01"></dia-po>
-    <dia-po display="tv02"></dia-po>
+    <dia-po display="tv02" default></dia-po>
     <dia-po display="pres01"></dia-po>
     <dia-po display="pres02"></dia-po>
   </dia-slide>
   <dia-slide id="s03">
     <dia-po display="proj01"></dia-po>
-    <dia-po display="tv01"></dia-po>
+    <dia-po display="tv01" default></dia-po>
     <dia-po display="tv02"></dia-po>
     <dia-po display="pres01"></dia-po>
     <dia-po display="pres02"></dia-po>
