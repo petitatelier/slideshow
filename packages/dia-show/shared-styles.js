@@ -58,6 +58,7 @@ const
     }
 
     dia-controller {
+      z-index: 1;
       opacity: 0.95;
       display: flex;
       flex-direction: row;
