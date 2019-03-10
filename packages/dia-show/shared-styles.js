@@ -123,11 +123,12 @@ const
       padding: 0.25em 0.5em }
     span.item {
       padding: 0 0.5em;
-      cursor: pointer }
+      cursor: pointer;
+      color: #333;
+    }
     span.item:hover { text-decoration: underline }
     span.item:hover,
     span.item[ selected] { color: blue }
-    }
   `,
   DiaControllerStyles = css`
     :host {
