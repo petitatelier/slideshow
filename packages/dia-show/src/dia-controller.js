@@ -1,7 +1,7 @@
 import { LitElement, html } from "lit-element";
 import { DiaControllerStyles } from "@petitatelier/dia-styles";
-// import "./dia-controller-keyboard.js";
-// import "./dia-controller-remote-firebase.js";
+import "./dia-controller-keyboard.js";
+import "./dia-controller-remote-firebase.js";
 
 // TODO:
 // [ ] Login to google

@@ -303,6 +303,212 @@ class DiaDisplaySelector extends LitElement {
 }
 customElements.define( "dia-display-selector", DiaDisplaySelector);
 
+const KEYBOARD_BINDINGS = Object.freeze({
+  FULLSCREEN: {code: "KeyF"},
+  DETACH: {code: "Escape"},
+  NEXT: {code: "ArrowRight"},
+  PREVIOUS: {code: "ArrowLeft"},
+  RESYNC: {code: "Space"},
+  TOGGLESPEAKER: {ctrlKey: true, altKey: true, code: "KeyS"},
+  FOCUS: {code: "Space", ctrlKey: true},
+});
+class DiaControllerKeyboard extends LitElement {
+  static get properties() {
+    return {
+      controller: { type: Element },
+      target: { type: Object }
+    }
+  }
+  constructor() {
+    super();
+    this.controller = undefined;
+  }
+  registerKeyboardListeners( target) {
+    target.setAttribute( "tabIndex", "-1");
+    target.focus();
+    target.addEventListener( "keyup", this.onKeyUp.bind( this));
+  }
+  getAction(e) {
+    const action = Object.keys(KEYBOARD_BINDINGS).find( (action) => {
+      return e.code == KEYBOARD_BINDINGS[action].code
+        && e.ctrlKey == (KEYBOARD_BINDINGS[action].ctrlKey || false)
+        && e.altKey == (KEYBOARD_BINDINGS[action].altKey || false);
+    });
+    return action;
+  }
+  onKeyUp( e) {
+    const action = this.getAction(e);
+    switch( action){
+      case "FULLSCREEN":
+        this.controller.fullscreen();
+        break;
+      case "DETACH":
+        this.controller.detach();
+        break;
+      case "NEXT":
+        this.controller.next();
+        break;
+      case "PREVIOUS":
+        this.controller.previous();
+        break;
+      case "RESYNC":
+        this.controller.resync();
+        break;
+      case "FOCUS":
+        this.controller.focus();
+        break;
+      case "TOGGLESPEAKER":
+        this.controller.toggleSpeaker();
+        break;
+    }
+  }
+  disconnectedCallback(){
+    super.disconnectedCallback();
+    target.removeEventListener( "keyup", this.onKeyUp);
+    this.target = undefined;
+  }
+}
+customElements.define("dia-controller-keyboard", DiaControllerKeyboard);
+
+class DiaControllerRemoteFirebase extends LitElement {
+  static get styles() {
+    return [ CommonStyles ];
+  }
+  static get properties() {
+    return {
+      roomId:   { type: String, attribute: "room-id" },
+      photoURL: { type: String },
+      head:     { type: Object}
+    }
+  }
+  render() {
+    return html`
+			<style>
+      :host { display: inline-flex; }
+      :host > * {
+        margin-right: 5px;
+        height: 2em;
+      }
+      img {
+        vertical-align: middle;
+      }
+      button[hidden] {
+        display: none;
+      }
+			</style>
+			<img class="small-user-profile" src="${this.photoURL}"></img>
+      <button id="login">LogIn</button>
+      <button id="logout" hidden>Logout</button>
+    `
+  }
+  constructor() {
+    super();
+    this.controller = undefined;
+    this.roomId = undefined;
+    this._firebaseConfig = {
+			apiKey: "AIzaSyADiO_Dlp79UW1IO6DwX6Gyy3jUD8Z-rHI",
+			authDomain: "slideshow-npm-package.firebaseapp.com",
+			databaseURL: "https://slideshow-npm-package.firebaseio.com",
+			projectId: "slideshow-npm-package",
+			storageBucket: "slideshow-npm-package.appspot.com",
+			messagingSenderId: "154605865517"
+		};
+    this._user = undefined;
+    this.initFirebase(this._firebaseConfig);
+    this.initFirebaseAuth();
+    this.initFirebaseDB();
+  }
+  initFirebase(config) {
+		window.firebase.initializeApp(config);
+  }
+  initFirebaseAuth(){
+    window.firebase.auth().onAuthStateChanged((user) => {
+			if (user) ; else {
+        console.warn("User is not logged in");
+        this._firebaseLoginAnonymously();
+			}
+      this._displayLoginButton(user && user.isAnonymous);
+      this._updateUser(user);
+      this.updateAudienceStats(this.head);
+		});
+  }
+  _firebaseLoginAnonymously(){
+    window.firebase.auth().signInAnonymously().catch((error) => {
+		});
+  }
+  _firebaseLoginGoogle() {
+    const provider = new window.firebase.auth.GoogleAuthProvider();
+    window.firebase.auth().signInWithPopup(provider).then((result) => {
+    }).catch(function(error) {
+      throw error;
+    });
+  }
+  _firebaseLogoutGooge() {
+		window.firebase.auth().signOut().then(function() {
+      this._updateUser(undefined);
+		}).catch(function(error) {
+		});
+  }
+  _updateUser(googleUser) {
+    this._user = googleUser;
+    this.photoURL = "https://petit-atelier.ch/images/petit-atelier-logo.svg";
+    if(googleUser && googleUser.photoURL){
+      this.photoURL = googleUser.photoURL;
+    }
+  }
+  _displayLoginButton(b) {
+    if(b) {
+      this.shadowRoot.querySelector("button[id='logout']").setAttribute("hidden", "");
+      this.shadowRoot.querySelector("button[id='login']").removeAttribute("hidden");
+    } else {
+      this.shadowRoot.querySelector("button[id='login']").setAttribute("hidden", "");
+      this.shadowRoot.querySelector("button[id='logout']").removeAttribute("hidden");
+    }
+  }
+  initFirebaseDB() {
+    this._db = window.firebase.firestore();
+  }
+  firstUpdated(){
+    const buttonLogin = this.shadowRoot.querySelector("button[id='login']");
+    buttonLogin.addEventListener("click", () => { this._firebaseLoginGoogle(); });
+    const buttonLogout = this.shadowRoot.querySelector("button[id='logout']");
+    buttonLogout.addEventListener("click", () => { this._firebaseLogoutGooge(); });
+  }
+  updated(changedProperties) {
+    if( changedProperties.has('roomId')){
+      this._listenRoomHeadSlide(this.roomId);
+    }
+  }
+  _listenRoomHeadSlide(roomId){
+    if(roomId == undefined) { return; }
+		this._db.collection("live").doc(this.roomId).onSnapshot( (doc) => {
+      const data = doc.data();
+      console.log("Firebase > Recvd new head", doc.data());
+      this.dispatchEvent( new CustomEvent( "live-head-updated", {
+        detail: {liveHead: {slide: data["head:slide"], display: data["head:display"]} }, bubbles: true, composed: true
+      }));
+    });
+  }
+  updateLiveHead(head){
+    if( head == undefined) { return; }
+    console.log("Firebase > updating the current `head` to", head);
+    this._db.collection("live").doc(this.roomId).update({"head:slide": head.slide, "head:display": head.display});
+  }
+  updateAudienceStats(head){
+    if(head) { this.head = head; }
+    if(this._user == undefined || this._user.uid == undefined || head == undefined){ return; }
+    console.log("Update user audience head", head);
+    const docId = this._user.isAnonymous ? "A_"+this._user.uid : this._user.email;
+    this._db.collection("audience").doc(docId).set({
+      "head:slide": head.slide,
+      "head:display": head.display,
+      displayName: this._user.displayName,
+      isAnonymous: this._user.isAnonymous
+    });
+  }
+}
+customElements.define("dia-controller-remote-firebase", DiaControllerRemoteFirebase);
+
 class DiaController extends LitElement {
   static get styles() {
     return [ DiaControllerStyles ];
