@@ -4,11 +4,22 @@
   "description": "The ‹dia-code› web component displays code fragments in a monospaced font",
   "author": "Olivier & Yves Lange",
   "license": "BSD-3-Clause",
-  "main": "dia-code.js",
-  "scripts": {},
+  "main": "dist/dia-code.js",
+  "module": "dist/dia-code.es.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run clean && rollup -c",
+    "clean": "rm -rf dist/"
+  },
   "dependencies": {
     "@petitatelier/dia-show": "^0.2.7",
     "lit-element": "^2.0.1"
+  },
+  "devDependencies": {
+    "rollup": "^1.6.0",
+    "rollup-plugin-cleanup": "^3.1.1"
   },
   "keywords": [
     "code",

@@ -4,11 +4,22 @@
   "description": "The ‹dia-livecode› web component embeds the Glitch collaborative code editor in a diapositive of a slideshow",
   "author": "Olivier & Yves Lange",
   "license": "BSD-3-Clause",
-  "main": "dia-livecode.js",
-  "scripts": {},
+  "main": "dist/dia-livecode.js",
+  "module": "dist/dia-livecode.es.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run clean && rollup -c",
+    "clean": "rm -rf dist/"
+  },
   "dependencies": {
     "@petitatelier/dia-show": "^0.2.7",
     "lit-element": "^2.0.1"
+  },
+  "devDependencies": {
+    "rollup": "^1.6.0",
+    "rollup-plugin-cleanup": "^3.1.1"
   },
   "keywords": [
     "glitch",
