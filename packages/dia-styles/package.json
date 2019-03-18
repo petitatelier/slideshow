@@ -1,11 +1,11 @@
 {
-  "name": "@petitatelier/dia-show",
+  "name": "@petitatelier/dia-styles",
   "version": "0.2.8",
-  "description": "A multiplex slideshow system, allowing one or more speakers to drive the same presentation, spreading its display on multiple displays",
+  "description": "The CSS styles common to all slideshow packages",
   "author": "Olivier & Yves Lange",
   "license": "BSD-3-Clause",
-  "main": "dist/index.js",
-  "module": "dist/index.es.js",
+  "main": "dist/shared-styles.js",
+  "module": "dist/shared-styles.es.js",
   "files": [
     "dist"
   ],
@@ -14,7 +14,6 @@
     "clean": "rm -rf dist/"
   },
   "dependencies": {
-    "@petitatelier/dia-styles": "^0.2.8",
     "lit-element": "^2.0.1"
   },
   "devDependencies": {
@@ -22,6 +21,7 @@
     "rollup-plugin-cleanup": "^3.1.1"
   },
   "keywords": [
+    "style",
     "slideshow",
     "multiplex",
     "diapositive",
@@ -36,7 +36,7 @@
   "bugs": {
     "url": "https://github.com/petitatelier/slideshow/issues"
   },
-  "homepage": "https://github.com/petitatelier/slideshow/tree/master/packages/dia-show#readme",
+  "homepage": "https://github.com/petitatelier/slideshow/tree/master/packages/dia-styles#readme",
   "publishConfig": {
     "access": "public"
   }

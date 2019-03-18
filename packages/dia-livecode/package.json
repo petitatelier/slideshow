@@ -14,7 +14,7 @@
     "clean": "rm -rf dist/"
   },
   "dependencies": {
-    "@petitatelier/dia-show": "^0.2.8",
+    "@petitatelier/dia-styles": "^0.2.8",
     "lit-element": "^2.0.1"
   },
   "devDependencies": {

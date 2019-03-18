@@ -1,13 +1,12 @@
 import { LitElement, html } from "lit-element";
-import controllerKeyboard from "./dia-controller-keyboard.js";
-import controllerRemoteFirbase from "./dia-controller-remote-firebase.js";
-import { DiaControllerStyles } from "./shared-styles.js";
+// import controllerKeyboard from "./dia-controller-keyboard.js";
+// import controllerRemoteFirbase from "./dia-controller-remote-firebase.js";
+import { DiaControllerStyles } from "@petitatelier/dia-styles";
 
 // TODO:
 // [ ] Login to google
 // [ ] Send the user current head to firebase
 // [ ] Detached head is not synched
-
 
 export default class DiaController extends LitElement {
   static get styles() {

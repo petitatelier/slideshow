@@ -3,12 +3,12 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var litElement = require('lit-element');
-var sharedStyles_js = require('@petitatelier/dia-show/shared-styles.js');
+var diaStyles = require('@petitatelier/dia-styles');
 
 class DiaCode extends litElement.LitElement {
   static get styles() {
     return [
-      sharedStyles_js.CommonStyles,
+      diaStyles.CommonStyles,
       litElement.css`
         :host {
           @import url( https://cdn.jsdelivr.net/gh/tonsky/FiraCode@1.206/distr/fira_code.css); }

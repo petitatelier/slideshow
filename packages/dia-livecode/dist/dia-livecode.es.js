@@ -1,5 +1,5 @@
 import { css, LitElement, html } from 'lit-element';
-import { CommonStyles } from '@petitatelier/dia-show/shared-styles.js';
+import { CommonStyles } from '@petitatelier/dia-styles';
 
 const MIN_REFRESH_TIMEOUT = 2000;
 const  DiaLiveCodeStyles = css`

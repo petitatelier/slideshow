@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit-element";
-import { CommonStyles } from "./shared-styles.js";
+import { CommonStyles } from "@petitatelier/dia-styles";
 
 export default class DiaControllerRemoteFirebase extends LitElement {
   static get styles() {

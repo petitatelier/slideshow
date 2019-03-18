@@ -1,5 +1,5 @@
 import { LitElement, html, css } from "lit-element";
-import { CommonStyles } from "@petitatelier/dia-show/shared-styles.js";
+import { CommonStyles } from "@petitatelier/dia-styles";
 
 export class DiaCode extends LitElement {
   static get styles() {

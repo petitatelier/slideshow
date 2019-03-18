@@ -1,5 +1,5 @@
 import { LitElement, html, css } from "lit-element";
-import { CommonStyles } from "@petitatelier/dia-show/shared-styles.js";
+import { CommonStyles } from "@petitatelier/dia-styles";
 
 // Minimum refresh timeout, to clamp refresh time and avoid receiving
 // HTTP error 429 « Too Many Requests » from Glitch

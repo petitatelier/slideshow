@@ -3,7 +3,7 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var litElement = require('lit-element');
-var sharedStyles_js = require('@petitatelier/dia-show/shared-styles.js');
+var diaStyles = require('@petitatelier/dia-styles');
 
 const MIN_REFRESH_TIMEOUT = 2000;
 const  DiaLiveCodeStyles = litElement.css`
@@ -12,7 +12,7 @@ const  DiaLiveCodeStyles = litElement.css`
 `;
 class DiaLiveCode extends litElement.LitElement {
   static get styles() {
-    return [ sharedStyles_js.CommonStyles, DiaLiveCodeStyles ];
+    return [ diaStyles.CommonStyles, DiaLiveCodeStyles ];
   };
   static get properties() {
     return {

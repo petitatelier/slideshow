@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit-element";
-import { CommonStyles, DiaShowStyles } from "./shared-styles.js";
+import { CommonStyles, DiaShowStyles } from "@petitatelier/dia-styles";
 
 export class DiaShow extends LitElement {
   static get styles() {
