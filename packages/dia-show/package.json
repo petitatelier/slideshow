@@ -4,10 +4,21 @@
   "description": "A multiplex slideshow system, allowing one or more speakers to drive the same presentation, spreading its display on multiple displays",
   "author": "Olivier & Yves Lange",
   "license": "BSD-3-Clause",
-  "main": "index.js",
-  "scripts": {},
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run clean && rollup -c",
+    "clean": "rm -rf dist/"
+  },
   "dependencies": {
     "lit-element": "^2.0.1"
+  },
+  "devDependencies": {
+    "rollup": "^1.6.0",
+    "rollup-plugin-cleanup": "^3.1.1"
   },
   "keywords": [
     "slideshow",
