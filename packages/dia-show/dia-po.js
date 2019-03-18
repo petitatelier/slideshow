@@ -11,6 +11,7 @@ export class DiaPo extends LitElement {
       // Public observed properties/attributes, set by slideshow author
       display: { type: String },    // Target display of the diapositive
       default: { type: Boolean },   // Diapositive displayed to audience (which has a single display)
+      fullbleed: { type: Boolean }, // When true, makes the inner div use all available space
 
       // Computed property, set by parent ‹dia-slide›, reflected
       // to an attribute, to allow CSS selectors to act upon it
@@ -26,7 +27,7 @@ export class DiaPo extends LitElement {
   }
 
   render() {
-    return html`<slot>‹dia-po ${this.display}›</slot>`;
+    return html`<div><slot>‹dia-po ${this.display}›</slot></div>`;
   }
 
   constructor() {
@@ -38,6 +39,7 @@ export class DiaPo extends LitElement {
     // Public observed properties
     this.display = undefined;
     this.default = false;
+    this.fullbleed = false;
     this.hidden = false;
     this.parentSlide = undefined;
     this.activeSlide = undefined;

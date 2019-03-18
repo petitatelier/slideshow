@@ -19,12 +19,12 @@
     <dia-controller></dia-controller>
     <dia-show slide="s01">
       <dia-slide id="s01">
-        <dia-po display="proj01"><dia-livecode project="power-asteroid" mode="editor" file="index.html"></dia-livecode></dia-po>
-        <dia-po display="tv01"><dia-livecode project="power-asteroid" mode="preview" refresh=7500></dia-livecode></dia-po>
+        <dia-po display="proj01" fullbleed><dia-livecode project="power-asteroid" mode="editor" file="index.html"></dia-livecode></dia-po>
+        <dia-po display="tv01" fullbleed><dia-livecode project="power-asteroid" mode="preview" refresh=7500></dia-livecode></dia-po>
       </dia-slide>
       <dia-slide id="s02">
-        <dia-po display="proj01"><dia-livecode project="power-asteroid" mode="embed" file="index.html"></dia-livecode></dia-po>
-        <dia-po display="tv01"><dia-code>if( typeof activeSlide !== "undefined") { … }</dia-code></dia-po>
+        <dia-po display="proj01" fullbleed><dia-livecode project="power-asteroid" mode="embed" file="index.html"></dia-livecode></dia-po>
+        <dia-po display="tv01" fullbleed><dia-code>if( typeof activeSlide !== "undefined") { … }</dia-code></dia-po>
       </dia-slide>
     </dia-show>
   </main>
