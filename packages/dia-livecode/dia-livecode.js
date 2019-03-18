@@ -43,14 +43,15 @@ export class DiaLiveCode extends LitElement {
 
   render() {
     const url = this.getGlitchURL( this.project, this.mode, this.file);
-    return html`
-      <slot></slot>
-      <iframe
-        allow="geolocation; microphone; camera; midi; encrypted-media"
-        src="${url}"
-        alt="${this.project} on Glitch">
-      </iframe>
-    `;
+    return (this.hidden)
+      ? html`<slot>(${this.project} on Glitch —&nbsp;hidden)</slot>`
+      : html`
+          <iframe
+            allow="geolocation; microphone; camera; midi; encrypted-media"
+            alt="${this.project} on Glitch"
+            src="${url}">
+          </iframe>
+        `;
   }
 
   constructor() {
