@@ -110,10 +110,10 @@ const
       align-items: center; justify-content: center }
     :host([ default]) {
       box-shadow: 1px 1px 5px 1px #dfdfdf }
-    div {
-      display: flex; flex-grow: 1 }
     :host([ fullbleed]) div {
-      width: 100%; height: 100% }
+      display: flex; flex-grow: 1;
+      width: 100%; height: 100%;
+      flex-direction: column }
   `,
   DiaDisplaySelectorStyles = css`
     :host { display: inline-flex }
