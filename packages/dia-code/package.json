@@ -1,13 +1,13 @@
 {
   "name": "@petitatelier/dia-code",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "The ‹dia-code› web component displays code fragments in a monospaced font",
   "author": "Olivier & Yves Lange",
   "license": "BSD-3-Clause",
   "main": "dia-code.js",
   "scripts": {},
   "dependencies": {
-    "@petitatelier/dia-show": "^0.2.4",
+    "@petitatelier/dia-show": "^0.2.5",
     "lit-element": "^2.0.1"
   },
   "keywords": [
