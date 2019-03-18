@@ -481,14 +481,14 @@ class DiaController extends LitElement {
     }));
   }
 }
-customElements.define("dia-controller", DiaController);
+customElements.define( "dia-controller", DiaController);
 
 var index = {
   DiaShow,
   DiaSlide,
   DiaPo,
   DiaDisplaySelector,
-  Controller: DiaController
+  DiaController
 };
 
 export default index;
