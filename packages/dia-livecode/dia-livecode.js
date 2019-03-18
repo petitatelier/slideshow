@@ -5,12 +5,15 @@ import { CommonStyles } from "@petitatelier/dia-show/shared-styles.js";
 // HTTP error 429 « Too Many Requests » from Glitch
 const MIN_REFRESH_TIMEOUT = 2000; // in milliseconds
 
+const  DiaLiveCodeStyles = css`
+  :host { display: flex; flex-grow: 1; width: 100%; height: 100% }
+  iframe { display: flex; flex-grow: 1; width: 100%; border: 0 }
+`;
+
 export class DiaLiveCode extends LitElement {
+
   static get styles() {
-    return [
-      CommonStyles,
-      css`:host { display: flex; flex-grow: 1 }`
-    ];
+    return [ CommonStyles, DiaLiveCodeStyles ];
   };
 
   static get properties() {
@@ -40,15 +43,15 @@ export class DiaLiveCode extends LitElement {
 
   render() {
     const url = this.getGlitchURL( this.project, this.mode, this.file);
-    return html`
-      <slot></slot>
-      <iframe
-        allow="geolocation; microphone; camera; midi; encrypted-media"
-        src="${url}"
-        alt="${this.project} on Glitch"
-        style="height: 100%; width: 100%; border: 0;">
-      </iframe>
-    `;
+    return (this.hidden)
+      ? html`<slot>(${this.project} on Glitch —&nbsp;hidden)</slot>`
+      : html`
+          <iframe
+            allow="geolocation; microphone; camera; midi; encrypted-media"
+            alt="${this.project} on Glitch"
+            src="${url}">
+          </iframe>
+        `;
   }
 
   constructor() {
@@ -94,7 +97,6 @@ export class DiaLiveCode extends LitElement {
         return undefined;
     }
   }
-
 }
 
 // Register the element with the browser
