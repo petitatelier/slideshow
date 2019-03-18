@@ -13,7 +13,7 @@ const KEYBOARD_BINDINGS = Object.freeze({
   FOCUS: {code: "Space", ctrlKey: true},
 });
 
-export default class DiaControllerKeyboard extends LitElement {
+export class DiaControllerKeyboard extends LitElement {
 
   static get properties() {
     return {

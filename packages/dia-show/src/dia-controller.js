@@ -1,14 +1,14 @@
 import { LitElement, html } from "lit-element";
-// import controllerKeyboard from "./dia-controller-keyboard.js";
-// import controllerRemoteFirbase from "./dia-controller-remote-firebase.js";
 import { DiaControllerStyles } from "@petitatelier/dia-styles";
+// import "./dia-controller-keyboard.js";
+// import "./dia-controller-remote-firebase.js";
 
 // TODO:
 // [ ] Login to google
 // [ ] Send the user current head to firebase
 // [ ] Detached head is not synched
 
-export default class DiaController extends LitElement {
+export class DiaController extends LitElement {
   static get styles() {
     return [ DiaControllerStyles ];
   }
@@ -237,8 +237,6 @@ export default class DiaController extends LitElement {
       detail: detail, bubbles: bubbles, composed: composed
     }));
   }
-
-
 }
 
-customElements.define("dia-controller", DiaController);
+customElements.define( "dia-controller", DiaController);
