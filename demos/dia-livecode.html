@@ -16,7 +16,6 @@
   </header>
 
   <main>
-    <dia-controller></dia-controller>
     <dia-show slide="s01">
       <dia-slide id="s01">
         <dia-po display="proj01" fullbleed><dia-livecode project="power-asteroid" mode="editor" file="index.html"></dia-livecode></dia-po>
@@ -29,9 +28,9 @@
     </dia-show>
   </main>
 
-  <script type="module" src="../node_modules/@petitatelier/dia-show/dist/index.es.js"></script>
-  <script type="module" src="../node_modules/@petitatelier/dia-livecode/dist/dia-livecode.es.js"></script>
-  <script type="module" src="../node_modules/@petitatelier/dia-code/dist/dia-code.es.js"></script>
+  <script type="module" src="../node_modules/@petitatelier/dia-show/src/index.js"></script>
+  <script type="module" src="../node_modules/@petitatelier/dia-livecode/src/dia-livecode.js"></script>
+  <script type="module" src="../node_modules/@petitatelier/dia-code/src/dia-code.js"></script>
   <script>
     addEventListener( "load", () => document.body.classList.remove( "unresolved"));
   </script>
