@@ -2,6 +2,7 @@ import { LitElement, html } from "lit-element";
 import { CommonStyles } from "@petitatelier/dia-styles";
 
 export class DiaControllerRemoteFirebase extends LitElement {
+
   static get styles() {
     return [ CommonStyles ];
   }
@@ -56,50 +57,50 @@ export class DiaControllerRemoteFirebase extends LitElement {
     // The connected user
     this._user = undefined;
 
-    this.initFirebase(this._firebaseConfig);
+    this.initFirebase( this._firebaseConfig);
     this.initFirebaseAuth();
     this.initFirebaseDB();
   }
 
 	// Initialize Firebase
   initFirebase(config) {
-		window.firebase.initializeApp(config);
+		window.firebase.initializeApp( config);
   }
 
   // Listen to login state changes
   initFirebaseAuth(){
-    window.firebase.auth().onAuthStateChanged((user) => {
+    window.firebase.auth().onAuthStateChanged(( user) => {
 			if (user) {
 			} else {
         console.warn("User is not logged in");
         this._firebaseLoginAnonymously();
 			}
-      this._displayLoginButton(user && user.isAnonymous);
-      this._updateUser(user);
-      this.updateAudienceStats(this.head);
+      this._displayLoginButton( user && user.isAnonymous);
+      this._updateUser( user);
+      this.updateAudienceStats( this.head);
 		});
   }
 
   _firebaseLoginAnonymously(){
-    window.firebase.auth().signInAnonymously().catch((error) => {
+    window.firebase.auth().signInAnonymously().catch(( error) => {
 		});
   }
 
   _firebaseLoginGoogle() {
     const provider = new window.firebase.auth.GoogleAuthProvider();
-    window.firebase.auth().signInWithPopup(provider).then((result) => {
+    window.firebase.auth().signInWithPopup( provider).then(( result) => {
       // This gives you a Google Access Token. You can use it to access the Google API.
       // var token = result.credential.accessToken;
-    }).catch(function(error) {
+    }).catch( function( error) {
       throw error;
     });
   }
 
-  _firebaseLogoutGooge() {
-		window.firebase.auth().signOut().then(function() {
+  _firebaseLogoutGoogle() {
+		window.firebase.auth().signOut().then( function() {
 			// Sign-out successful.
-      this._updateUser(undefined);
-		}).catch(function(error) {
+      this._updateUser( undefined);
+		}).catch( function( error) {
 			// An error happened.
 		});
   }
@@ -107,18 +108,18 @@ export class DiaControllerRemoteFirebase extends LitElement {
   _updateUser(googleUser) {
     this._user = googleUser;
     this.photoURL = "https://petit-atelier.ch/images/petit-atelier-logo.svg"
-    if(googleUser && googleUser.photoURL){
+    if( googleUser && googleUser.photoURL) {
       this.photoURL = googleUser.photoURL;
     }
   }
 
-  _displayLoginButton(b) {
-    if(b) {
-      this.shadowRoot.querySelector("button[id='logout']").setAttribute("hidden", "");
-      this.shadowRoot.querySelector("button[id='login']").removeAttribute("hidden");
+  _displayLoginButton( b) {
+    if( b) {
+      this.shadowRoot.querySelector( "button[id='logout']").setAttribute( "hidden", "");
+      this.shadowRoot.querySelector( "button[id='login']").removeAttribute( "hidden");
     } else {
-      this.shadowRoot.querySelector("button[id='login']").setAttribute("hidden", "");
-      this.shadowRoot.querySelector("button[id='logout']").removeAttribute("hidden");
+      this.shadowRoot.querySelector( "button[id='login']").setAttribute( "hidden", "");
+      this.shadowRoot.querySelector( "button[id='logout']").removeAttribute( "hidden");
     }
   }
 
@@ -131,45 +132,59 @@ export class DiaControllerRemoteFirebase extends LitElement {
     const buttonLogin = this.shadowRoot.querySelector("button[id='login']");
     buttonLogin.addEventListener("click", () => { this._firebaseLoginGoogle(); });
     const buttonLogout = this.shadowRoot.querySelector("button[id='logout']");
-    buttonLogout.addEventListener("click", () => { this._firebaseLogoutGooge(); });
+    buttonLogout.addEventListener("click", () => { this._firebaseLogoutGoogle(); });
   }
 
-  updated(changedProperties) {
+  updated( changedProperties) {
     if( changedProperties.has('roomId')){
       this._listenRoomHeadSlide(this.roomId);
     }
   }
 
-  _listenRoomHeadSlide(roomId){
+  _listenRoomHeadSlide( roomId){
     if(roomId == undefined) { return; }
-		this._db.collection("live").doc(this.roomId).onSnapshot( (doc) => {
+		this._db.collection( "live").doc( this.roomId).onSnapshot(( doc) => {
       const data = doc.data();
       // this.controller.remoteHeadUpdated(data["head:slide"])
-      console.log("Firebase > Recvd new head", doc.data());
+      console.debug( "dia-controller-remote-firebase › listenRoomHeadSlide()", doc.data());
       this.dispatchEvent( new CustomEvent( "live-head-updated", {
-        detail: {liveHead: {slide: data["head:slide"], display: data["head:display"]} }, bubbles: true, composed: true
+        detail: {
+          liveHead: {
+            slide: data[ "head:slide"],
+            display: data[ "head:display"]
+          }},
+        bubbles: true, composed: true
       }));
     });
   }
 
-  updateLiveHead(head){
+  updateLiveHead( head){
     if( head == undefined) { return; }
-    console.log("Firebase > updating the current `head` to", head);
-    this._db.collection("live").doc(this.roomId).update({"head:slide": head.slide, "head:display": head.display})
+    console.debug( "dia-controller-remote-firebase › updateLiveHead( head)", head);
+    this._db
+      .collection( "live")
+      .doc( this.roomId)
+      .update( {
+        "head:slide": head.slide,
+        "head:display": head.display
+      });
   }
 
-  updateAudienceStats(head){
-    if(head) { this.head = head; } // register the user current head in case he logs in
-    if(this._user == undefined || this._user.uid == undefined || head == undefined){ return; }
-    console.log("Update user audience head", head);
+  updateAudienceStats( head){
+    console.debug( "dia-controller-remote-firebase › updateAudienceStats( head)", head);
+    if( head) { this.head = head; } // register the user current head in case he logs in
+    if( this._user == undefined || this._user.uid == undefined || head == undefined) { return; }
     const docId = this._user.isAnonymous ? "A_"+this._user.uid : this._user.email;
-    this._db.collection("audience").doc(docId).set({
-      "head:slide": head.slide,
-      "head:display": head.display,
-      displayName: this._user.displayName,
-      isAnonymous: this._user.isAnonymous
-    });
+    this._db
+      .collection( "audience")
+      .doc( docId)
+      .set({
+        "head:slide":   head.slide,
+        "head:display": head.display,
+        "displayName":  this._user.displayName,
+        "isAnonymous":  this._user.isAnonymous
+      });
   }
 }
 
-customElements.define("dia-controller-remote-firebase", DiaControllerRemoteFirebase);
+customElements.define( "dia-controller-remote-firebase", DiaControllerRemoteFirebase);

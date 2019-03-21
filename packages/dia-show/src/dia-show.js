@@ -150,7 +150,7 @@ export class DiaShow extends LitElement {
   // Sets the active display when the custom event `display-selected` is fired from a child.
   _onDisplaySelected( e) {
     const selectedDisplay = e.detail.display;
-    console.log( `dia-show › on-display-selected: ${selectedDisplay}`);
+    console.debug( `dia-show › on-display-selected: ${selectedDisplay}`);
     this.display = selectedDisplay != undefined ? selectedDisplay : null;
     e.stopPropagation();
   }
@@ -158,7 +158,7 @@ export class DiaShow extends LitElement {
   // Sets the active slide when the custom event `slide-selected` is fired from a child.
   _onSlideSelected( e) {
     const selectedSlide = e.detail.slide;
-    console.log( `dia-show › on-slide-selected: ${selectedSlide}`);
+    console.debug( `dia-show › on-slide-selected: ${selectedSlide}`);
     this.slide = selectedSlide != undefined ? selectedSlide : null;
     e.stopPropagation();
   }

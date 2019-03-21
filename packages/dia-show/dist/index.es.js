@@ -98,13 +98,13 @@ class DiaShow extends LitElement {
   }
   _onDisplaySelected( e) {
     const selectedDisplay = e.detail.display;
-    console.log( `dia-show › on-display-selected: ${selectedDisplay}`);
+    console.debug( `dia-show › on-display-selected: ${selectedDisplay}`);
     this.display = selectedDisplay != undefined ? selectedDisplay : null;
     e.stopPropagation();
   }
   _onSlideSelected( e) {
     const selectedSlide = e.detail.slide;
-    console.log( `dia-show › on-slide-selected: ${selectedSlide}`);
+    console.debug( `dia-show › on-slide-selected: ${selectedSlide}`);
     this.slide = selectedSlide != undefined ? selectedSlide : null;
     e.stopPropagation();
   }
@@ -414,55 +414,55 @@ class DiaControllerRemoteFirebase extends LitElement {
 			messagingSenderId: "154605865517"
 		};
     this._user = undefined;
-    this.initFirebase(this._firebaseConfig);
+    this.initFirebase( this._firebaseConfig);
     this.initFirebaseAuth();
     this.initFirebaseDB();
   }
   initFirebase(config) {
-		window.firebase.initializeApp(config);
+		window.firebase.initializeApp( config);
   }
   initFirebaseAuth(){
-    window.firebase.auth().onAuthStateChanged((user) => {
+    window.firebase.auth().onAuthStateChanged(( user) => {
 			if (user) ; else {
         console.warn("User is not logged in");
         this._firebaseLoginAnonymously();
 			}
-      this._displayLoginButton(user && user.isAnonymous);
-      this._updateUser(user);
-      this.updateAudienceStats(this.head);
+      this._displayLoginButton( user && user.isAnonymous);
+      this._updateUser( user);
+      this.updateAudienceStats( this.head);
 		});
   }
   _firebaseLoginAnonymously(){
-    window.firebase.auth().signInAnonymously().catch((error) => {
+    window.firebase.auth().signInAnonymously().catch(( error) => {
 		});
   }
   _firebaseLoginGoogle() {
     const provider = new window.firebase.auth.GoogleAuthProvider();
-    window.firebase.auth().signInWithPopup(provider).then((result) => {
-    }).catch(function(error) {
+    window.firebase.auth().signInWithPopup( provider).then(( result) => {
+    }).catch( function( error) {
       throw error;
     });
   }
-  _firebaseLogoutGooge() {
-		window.firebase.auth().signOut().then(function() {
-      this._updateUser(undefined);
-		}).catch(function(error) {
+  _firebaseLogoutGoogle() {
+		window.firebase.auth().signOut().then( function() {
+      this._updateUser( undefined);
+		}).catch( function( error) {
 		});
   }
   _updateUser(googleUser) {
     this._user = googleUser;
     this.photoURL = "https://petit-atelier.ch/images/petit-atelier-logo.svg";
-    if(googleUser && googleUser.photoURL){
+    if( googleUser && googleUser.photoURL) {
       this.photoURL = googleUser.photoURL;
     }
   }
-  _displayLoginButton(b) {
-    if(b) {
-      this.shadowRoot.querySelector("button[id='logout']").setAttribute("hidden", "");
-      this.shadowRoot.querySelector("button[id='login']").removeAttribute("hidden");
+  _displayLoginButton( b) {
+    if( b) {
+      this.shadowRoot.querySelector( "button[id='logout']").setAttribute( "hidden", "");
+      this.shadowRoot.querySelector( "button[id='login']").removeAttribute( "hidden");
     } else {
-      this.shadowRoot.querySelector("button[id='login']").setAttribute("hidden", "");
-      this.shadowRoot.querySelector("button[id='logout']").removeAttribute("hidden");
+      this.shadowRoot.querySelector( "button[id='login']").setAttribute( "hidden", "");
+      this.shadowRoot.querySelector( "button[id='logout']").removeAttribute( "hidden");
     }
   }
   initFirebaseDB() {
@@ -472,42 +472,56 @@ class DiaControllerRemoteFirebase extends LitElement {
     const buttonLogin = this.shadowRoot.querySelector("button[id='login']");
     buttonLogin.addEventListener("click", () => { this._firebaseLoginGoogle(); });
     const buttonLogout = this.shadowRoot.querySelector("button[id='logout']");
-    buttonLogout.addEventListener("click", () => { this._firebaseLogoutGooge(); });
+    buttonLogout.addEventListener("click", () => { this._firebaseLogoutGoogle(); });
   }
-  updated(changedProperties) {
+  updated( changedProperties) {
     if( changedProperties.has('roomId')){
       this._listenRoomHeadSlide(this.roomId);
     }
   }
-  _listenRoomHeadSlide(roomId){
+  _listenRoomHeadSlide( roomId){
     if(roomId == undefined) { return; }
-		this._db.collection("live").doc(this.roomId).onSnapshot( (doc) => {
+		this._db.collection( "live").doc( this.roomId).onSnapshot(( doc) => {
       const data = doc.data();
-      console.log("Firebase > Recvd new head", doc.data());
+      console.debug( "dia-controller-remote-firebase › listenRoomHeadSlide()", doc.data());
       this.dispatchEvent( new CustomEvent( "live-head-updated", {
-        detail: {liveHead: {slide: data["head:slide"], display: data["head:display"]} }, bubbles: true, composed: true
+        detail: {
+          liveHead: {
+            slide: data[ "head:slide"],
+            display: data[ "head:display"]
+          }},
+        bubbles: true, composed: true
       }));
     });
   }
-  updateLiveHead(head){
+  updateLiveHead( head){
     if( head == undefined) { return; }
-    console.log("Firebase > updating the current `head` to", head);
-    this._db.collection("live").doc(this.roomId).update({"head:slide": head.slide, "head:display": head.display});
+    console.debug( "dia-controller-remote-firebase › updateLiveHead( head)", head);
+    this._db
+      .collection( "live")
+      .doc( this.roomId)
+      .update( {
+        "head:slide": head.slide,
+        "head:display": head.display
+      });
   }
-  updateAudienceStats(head){
-    if(head) { this.head = head; }
-    if(this._user == undefined || this._user.uid == undefined || head == undefined){ return; }
-    console.log("Update user audience head", head);
+  updateAudienceStats( head){
+    console.debug( "dia-controller-remote-firebase › updateAudienceStats( head)", head);
+    if( head) { this.head = head; }
+    if( this._user == undefined || this._user.uid == undefined || head == undefined) { return; }
     const docId = this._user.isAnonymous ? "A_"+this._user.uid : this._user.email;
-    this._db.collection("audience").doc(docId).set({
-      "head:slide": head.slide,
-      "head:display": head.display,
-      displayName: this._user.displayName,
-      isAnonymous: this._user.isAnonymous
-    });
+    this._db
+      .collection( "audience")
+      .doc( docId)
+      .set({
+        "head:slide":   head.slide,
+        "head:display": head.display,
+        "displayName":  this._user.displayName,
+        "isAnonymous":  this._user.isAnonymous
+      });
   }
 }
-customElements.define("dia-controller-remote-firebase", DiaControllerRemoteFirebase);
+customElements.define( "dia-controller-remote-firebase", DiaControllerRemoteFirebase);
 
 class DiaController extends LitElement {
   static get styles() {
@@ -546,7 +560,7 @@ class DiaController extends LitElement {
     this._target = undefined;
     this._keyboardController = undefined;
     this._remoteController = undefined;
-    this.addEventListener("live-head-updated", this._onLiveHeadUpdated);
+    this.addEventListener( "live-head-updated", this._onLiveHeadUpdated.bind( this));
   }
   firstUpdated() {
     this._keyboardController = this.shadowRoot.querySelector("dia-controller-keyboard");
@@ -568,14 +582,12 @@ class DiaController extends LitElement {
       || changedProperties.has( "speaker")
       || changedProperties.has( "liveHead")
       || changedProperties.has( "detached")) {
-      if(!this.speaker &&
-         this.liveHead &&
-         this.liveHead.slide != this.slide &&
-         this.liveHead != undefined && !this.detached) {
-        console.log("DETACHED", this.liveHead, this.head);
+      if( !this.speaker && !this.detached
+        && this.liveHead && this.liveHead != undefined
+        && this.liveHead.slide != this.slide) {
         this.detach();
       }
-      if(this.detached){
+      if( this.detached){
         this.detachedHead = this.head;
       }
     }
@@ -584,6 +596,7 @@ class DiaController extends LitElement {
     }
   }
   next() {
+    console.debug( "dia-controller › next()");
     if(this.target.slide == undefined) { return; }
     const slide = this.target.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[0];
     const nextSlide = slide.nextElementSibling;
@@ -600,6 +613,7 @@ class DiaController extends LitElement {
     }
   }
   previous() {
+    console.debug( "dia-controller › previous()");
     if(this.target.slide == undefined) { return; }
     var slide = this.target.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[0];
     var prevSlide = slide.previousElementSibling;
@@ -620,26 +634,29 @@ class DiaController extends LitElement {
     return defaultDiaPo.getAttribute("display");
   }
   moveTo( slide, display) {
-    console.log( "dia-controller › moveTo()", slide, display);
+    console.debug( "dia-controller › moveTo()", slide, display);
     this.moveToSlide(slide);
     this.moveToDisplay(display);
   }
   moveToSlide( slide) {
+    console.debug( "dia-controller › moveToSlide()", slide);
     this.__dispatchEvt("slide-selected", {slide: slide});
   }
   moveToDisplay( display) {
+    console.debug( "dia-controller › moveToDisplay()", display);
     this.__dispatchEvt("display-selected", {display: display});
   }
-  detach(){
-    if(this.detached) {
-      this.moveTo(null, null);
+  detach() {
+    console.debug( "dia-controller › detach() from liveHead");
+    if( this.detached) {
+      this.moveTo( null, null);
     } else {
-      this.__dispatchEvt("detach-enabled");
+      this.__dispatchEvt( "detach-enabled");
       this.detachedHead = this.head;
     }
   }
   resync() {
-    console.log("Controller > resynchronized with liveHead");
+    console.debug( "dia-controller › resync() with liveHead");
     this.detachedHead = undefined;
     this.__dispatchEvt("detach-disabled");
     if( this.speaker && this.liveHead.slide == this.head.slide) {
@@ -653,15 +670,18 @@ class DiaController extends LitElement {
     }
   }
   fullscreen() {
+    console.debug( "dia-controller › fullscreen()");
     this.__dispatchEvt("fullscreen-enabled");
   }
   toggleSpeaker(){
+    console.debug( "dia-controller › toggleSpeaker()");
     if(!this.detached){
       this.__dispatchEvt("speaker-toggled");
       if(this.head.slide != this.liveHead.slide){this.resync();}
     }
   }
   focus(){
+    console.debug( "dia-controller › focus()");
     if(this.speaker && this.detached) {
       this._remoteController.updateLiveHead(this.head);
       this.__dispatchEvt("detach-disabled");
@@ -670,7 +690,7 @@ class DiaController extends LitElement {
   _onLiveHeadUpdated(e){
     const prevLiveHead = this.liveHead;
     this.liveHead = e.detail.liveHead;
-    console.log("dia-controller › live head updated to", e.detail.liveHead);
+    console.debug( "dia-controller › on-live-head-updated(): ", e.detail.liveHead);
     if(prevLiveHead == undefined){
       this.resync();
     } else if(!this.detached) {

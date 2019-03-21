@@ -51,7 +51,7 @@ export class DiaController extends LitElement {
     this._keyboardController = undefined;
     this._remoteController = undefined;
 
-    this.addEventListener("live-head-updated", this._onLiveHeadUpdated);
+    this.addEventListener( "live-head-updated", this._onLiveHeadUpdated.bind( this));
   }
 
   firstUpdated() {
@@ -82,11 +82,9 @@ export class DiaController extends LitElement {
       //
       // Set the detached mode when the `liveHead` differs from the user `head`
       // and the detached mode was not previously set (sanity)
-      if(!this.speaker &&
-         this.liveHead &&
-         this.liveHead.slide != this.slide &&
-         this.liveHead != undefined && !this.detached) {
-        console.log("DETACHED", this.liveHead, this.head);
+      if( !this.speaker && !this.detached
+        && this.liveHead && this.liveHead != undefined
+        && this.liveHead.slide != this.slide) {
         this.detach();
       }
 
@@ -94,7 +92,7 @@ export class DiaController extends LitElement {
       //
       // Synchronize the deatched head with the current user active slide when
       // in detached mode.
-      if(this.detached){
+      if( this.detached){
         this.detachedHead = this.head;
       }
     }
@@ -106,6 +104,7 @@ export class DiaController extends LitElement {
 
   // Set the next slide as the current one.
   next() {
+    console.debug( "dia-controller › next()");
     if(this.target.slide == undefined) { return; }
     const slide = this.target.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[0];
     const nextSlide = slide.nextElementSibling;
@@ -128,6 +127,7 @@ export class DiaController extends LitElement {
 
   // Set the previous slide as the current one.
   previous() {
+    console.debug( "dia-controller › previous()");
     if(this.target.slide == undefined) { return; }
     var slide = this.target.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[0];
     var prevSlide = slide.previousElementSibling;
@@ -156,33 +156,36 @@ export class DiaController extends LitElement {
 
   // Move to the specified slide and/or display
   moveTo( slide, display) {
-    console.log( "dia-controller › moveTo()", slide, display);
+    console.debug( "dia-controller › moveTo()", slide, display);
     this.moveToSlide(slide);
     this.moveToDisplay(display);
   }
 
   // Move to the specified slide
   moveToSlide( slide) {
+    console.debug( "dia-controller › moveToSlide()", slide);
     this.__dispatchEvt("slide-selected", {slide: slide});
   }
 
   // Move to the specified display
   moveToDisplay( display) {
+    console.debug( "dia-controller › moveToDisplay()", display);
     this.__dispatchEvt("display-selected", {display: display});
   }
 
   // Detach from the head
-  detach(){
-    if(this.detached) {
-      this.moveTo(null, null);
+  detach() {
+    console.debug( "dia-controller › detach() from liveHead");
+    if( this.detached) {
+      this.moveTo( null, null);
     } else {
-      this.__dispatchEvt("detach-enabled");
+      this.__dispatchEvt( "detach-enabled");
       this.detachedHead = this.head;
     }
   }
 
   resync() {
-    console.log("Controller > resynchronized with liveHead");
+    console.debug( "dia-controller › resync() with liveHead");
     this.detachedHead = undefined;
     this.__dispatchEvt("detach-disabled");
     if( this.speaker && this.liveHead.slide == this.head.slide) {
@@ -197,10 +200,12 @@ export class DiaController extends LitElement {
   }
 
   fullscreen() {
+    console.debug( "dia-controller › fullscreen()");
     this.__dispatchEvt("fullscreen-enabled");
   }
 
   toggleSpeaker(){
+    console.debug( "dia-controller › toggleSpeaker()");
     if(!this.detached){
       this.__dispatchEvt("speaker-toggled");
       if(this.head.slide != this.liveHead.slide){this.resync();}
@@ -208,6 +213,7 @@ export class DiaController extends LitElement {
   }
 
   focus(){
+    console.debug( "dia-controller › focus()");
     if(this.speaker && this.detached) {
       this._remoteController.updateLiveHead(this.head);
       this.__dispatchEvt("detach-disabled");
@@ -217,7 +223,7 @@ export class DiaController extends LitElement {
   _onLiveHeadUpdated(e){
     const prevLiveHead = this.liveHead;
     this.liveHead = e.detail.liveHead;
-    console.log("dia-controller › live head updated to", e.detail.liveHead);
+    console.debug( "dia-controller › on-live-head-updated(): ", e.detail.liveHead);
     if(prevLiveHead == undefined){
       this.resync();
     } else if(!this.detached) {

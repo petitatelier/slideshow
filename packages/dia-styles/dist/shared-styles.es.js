@@ -143,4 +143,4 @@ const
     }
   `;
 
-export { CommonStyles, DiaShowStyles, DiaSlideStyles, DiaPoStyles, DiaDisplaySelectorStyles, DiaControllerStyles };
+export { CommonStyles, DiaControllerStyles, DiaDisplaySelectorStyles, DiaPoStyles, DiaShowStyles, DiaSlideStyles };

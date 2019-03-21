@@ -148,8 +148,8 @@ const
   `;
 
 exports.CommonStyles = CommonStyles;
+exports.DiaControllerStyles = DiaControllerStyles;
+exports.DiaDisplaySelectorStyles = DiaDisplaySelectorStyles;
+exports.DiaPoStyles = DiaPoStyles;
 exports.DiaShowStyles = DiaShowStyles;
 exports.DiaSlideStyles = DiaSlideStyles;
-exports.DiaPoStyles = DiaPoStyles;
-exports.DiaDisplaySelectorStyles = DiaDisplaySelectorStyles;
-exports.DiaControllerStyles = DiaControllerStyles;
