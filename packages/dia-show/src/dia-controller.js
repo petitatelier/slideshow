@@ -19,10 +19,7 @@ export class DiaController extends LitElement {
       display:       { type: String },
       speaker:       { type: Boolean },
       detached:      { type: Boolean },
-      target:        { type: Object }, // The target to bind to (eg: keyboard events, clicks, ...)
-      _head:         { type: Object, attribute: true},
-      _liveHead:     { type: String, attribute: "live-head"},
-      _detachedHead: { type: String, attribute: "detached-head"},
+      target:        { type: Object } // The target to bind to (eg: keyboard events, clicks, ...)
     }
   }
 
