@@ -34,17 +34,18 @@ export class DiaController extends LitElement {
 
   constructor(){
     super();
+
+    // Public observed properties
     this.slide        = undefined;
     this.display      = undefined;
+    this.speaker      = false;
+    this.detached     = false;
+    this.target       = undefined;
+
+    // Private non-observed properties
     this.head         = {slide: undefined, display: undefined};
     this.liveHead     = undefined;
     this.detachedHead = undefined;
-    this.detached     = false;
-    this.speaker      = false;
-    this.detached     = false;
-
-    // Private properties
-    this._target = undefined;
     this._keyboardController = undefined;
     this._remoteController = undefined;
 
@@ -52,13 +53,14 @@ export class DiaController extends LitElement {
   }
 
   firstUpdated() {
-    this._keyboardController = this.shadowRoot.querySelector("dia-controller-keyboard");
+    this._keyboardController = this.shadowRoot.querySelector( "dia-controller-keyboard");
     this._keyboardController.controller = this;
-    this._remoteController = this.shadowRoot.querySelector("dia-controller-remote-firebase");
+    this._remoteController = this.shadowRoot.querySelector( "dia-controller-remote-firebase");
     this._remoteController.controller = this;
   }
 
-  updated(changedProperties){
+  updated( changedProperties) {
+    console.debug( "dia-controller › updated()", changedProperties);
     if( changedProperties.has( "slide")) {
       this.head.slide = this.slide;
     }
@@ -94,8 +96,11 @@ export class DiaController extends LitElement {
       }
     }
 
-    if( changedProperties.has( "target") && this.target != undefined) {
-      this._keyboardController.registerKeyboardListeners( this.target);
+    if( changedProperties.has( "target")) {
+      console.debug( "dia-controller › updated( target)", this.target);
+      if( this._keyboardController) {
+        this._keyboardController.target = this.target;
+      }
     }
   }
 

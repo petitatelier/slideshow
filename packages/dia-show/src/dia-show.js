@@ -86,7 +86,7 @@ export class DiaShow extends LitElement {
   }
 
   firstUpdated(){
-    this._controller = this.shadowRoot.querySelector("dia-controller");
+    this._controller = this.shadowRoot.querySelector( "dia-controller");
     this._controller.target = this;
   }
 
