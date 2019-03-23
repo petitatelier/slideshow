@@ -51,7 +51,8 @@ export class DiaShow extends LitElement {
     `;
   }
 
-  _onCloneWindowClicked( e) {
+  // eslint-disable-next-line no-unused-vars
+  _onCloneWindowClicked( _event) {
     console.debug( "dia-show › on-clone-window-clicked");
     const currentURL = window.location.href,
           windowObjRef = window.open( currentURL, ""); // `""` ensures we open a new window

@@ -1,6 +1,7 @@
 import { LitElement, html } from "lit-element";
 import { DiaControllerStyles } from "@petitatelier/dia-styles";
 import "./dia-controller-keyboard.js";
+import "./dia-controller-pointer.js";
 import "./dia-controller-remote-firebase.js";
 
 // TODO:
@@ -28,6 +29,7 @@ export class DiaController extends LitElement {
     return html`
       <slot></slot>
       <dia-controller-keyboard></dia-controller-keyboard>
+      <dia-controller-pointer></dia-controller-pointer>
       <dia-controller-remote-firebase room-id="room:main"></dia-controller-remote-firebase>
       <slot name="after"></slot>
     `;
@@ -48,6 +50,7 @@ export class DiaController extends LitElement {
     this.liveHead     = undefined;
     this.detachedHead = undefined;
     this._keyboardController = undefined;
+    this._pointerController = undefined;
     this._remoteController = undefined;
 
     // Attach event listeners
@@ -63,6 +66,7 @@ export class DiaController extends LitElement {
 
   firstUpdated() {
     this._keyboardController = this.shadowRoot.querySelector( "dia-controller-keyboard");
+    this._pointerController = this.shadowRoot.querySelector( "dia-controller-pointer");
     this._remoteController = this.shadowRoot.querySelector( "dia-controller-remote-firebase");
     this._remoteController.controller = this;
   }
@@ -109,10 +113,14 @@ export class DiaController extends LitElement {
       if( this._keyboardController) {
         this._keyboardController.target = this.target;
       }
+      if( this._pointerController) {
+        this._pointerController.target = this.target;
+      }
     }
   }
 
   // Set the next slide as the current one.
+  // eslint-disable-next-line no-unused-vars
   next( _event) {
     console.debug( "dia-controller › next()");
     if( this.target.slide == undefined) { return; }
@@ -136,6 +144,7 @@ export class DiaController extends LitElement {
   }
 
   // Set the previous slide as the current one.
+  // eslint-disable-next-line no-unused-vars
   previous( _event) {
     console.debug( "dia-controller › previous()");
     if(this.target.slide == undefined) { return; }
@@ -184,6 +193,7 @@ export class DiaController extends LitElement {
   }
 
   // Detach from the head
+  // eslint-disable-next-line no-unused-vars
   detach( _event) {
     console.debug( "dia-controller › detach()");
     if( this.detached) {
@@ -194,6 +204,7 @@ export class DiaController extends LitElement {
     }
   }
 
+  // eslint-disable-next-line no-unused-vars
   resync( _event) {
     console.debug( "dia-controller › resync()");
     this.detachedHead = undefined;
@@ -209,11 +220,13 @@ export class DiaController extends LitElement {
     }
   }
 
+  // eslint-disable-next-line no-unused-vars
   fullscreen( _event) {
     console.debug( "dia-controller › fullscreen()");
     this.__dispatchEvt( "fullscreen-enabled");
   }
 
+  // eslint-disable-next-line no-unused-vars
   toggleSpeaker( _event) {
     console.debug( "dia-controller › toggleSpeaker()");
     if( !this.detached){
@@ -222,6 +235,7 @@ export class DiaController extends LitElement {
     }
   }
 
+  // eslint-disable-next-line no-unused-vars
   focus( _event) {
     console.debug( "dia-controller › focus()");
     if(this.speaker && this.detached) {
@@ -230,7 +244,7 @@ export class DiaController extends LitElement {
     }
   }
 
-  _onLiveHeadUpdated(e){
+  _onLiveHeadUpdated( e){
     const prevLiveHead = this.liveHead;
     this.liveHead = e.detail.liveHead;
     console.debug( "dia-controller › on-live-head-updated(): ", e.detail.liveHead);

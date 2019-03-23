@@ -24,17 +24,15 @@ class DiaShow extends LitElement {
       <dia-controller slide="${this.slide}" display="${this.display}" ?speaker="${this.speaker}" ?detached="${this.detached}">
         <dia-display-selector .displayList=${this._displayList}></dia-display-selector>
         <button id="cloneWindow" @click=${this._onCloneWindowClicked}>Clone window</button>
-        <span slot="after">
-          <button id="fullscreen" @click="${this.fullscreen}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"
-              ><path d="M4.5 11H3v4h4v-1.5H4.5V11zM3 7h1.5V4.5H7V3H3v4zm10.5 6.5H11V15h4v-4h-1.5v2.5zM11 3v1.5h2.5V7H15V3h-4z"/></svg>
-          </button>
-        </span>
+        <button id="fullscreen" @click="${this.fullscreen}" slot="after">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"
+            ><path d="M4.5 11H3v4h4v-1.5H4.5V11zM3 7h1.5V4.5H7V3H3v4zm10.5 6.5H11V15h4v-4h-1.5v2.5zM11 3v1.5h2.5V7H15V3h-4z"/></svg>
+        </button>
       </dia-controller>
       <slot></slot>
     `;
   }
-  _onCloneWindowClicked( e) {
+  _onCloneWindowClicked( _event) {
     console.debug( "dia-show › on-clone-window-clicked");
     const currentURL = window.location.href,
           windowObjRef = window.open( currentURL, "");
@@ -60,7 +58,7 @@ class DiaShow extends LitElement {
     this._dispose();
   }
   firstUpdated(){
-    this._controller = this.shadowRoot.querySelector("dia-controller");
+    this._controller = this.shadowRoot.querySelector( "dia-controller");
     this._controller.target = this;
   }
   updated( changedProperties) {
@@ -303,72 +301,233 @@ class DiaDisplaySelector extends LitElement {
 }
 customElements.define( "dia-display-selector", DiaDisplaySelector);
 
+const $FULLSCREEN = Symbol( "FULLSCREEN"),
+      $DETACH = Symbol( "DETACH"),
+      $NEXT = Symbol( "NEXT"),
+      $PREVIOUS = Symbol( "PREV"),
+      $RESYNC = Symbol( "RESYNC"),
+      $SPEAKER = Symbol( "SPEAKER"),
+      $FOCUS = Symbol( "FOCUS");
 const KEYBOARD_BINDINGS = Object.freeze({
-  FULLSCREEN: {code: "KeyF"},
-  DETACH: {code: "Escape"},
-  NEXT: {code: "ArrowRight"},
-  PREVIOUS: {code: "ArrowLeft"},
-  RESYNC: {code: "Space"},
-  TOGGLESPEAKER: {ctrlKey: true, altKey: true, code: "KeyS"},
-  FOCUS: {code: "Space", ctrlKey: true},
+  [$FULLSCREEN]: { code: "KeyF" },
+  [$DETACH]:  { code: "Escape" },
+  [$NEXT]:    { code: "ArrowRight" },
+  [$PREVIOUS]:    { code: "ArrowLeft" },
+  [$RESYNC]:  { code: "Space" },
+  [$SPEAKER]: { code: "KeyS", ctrlKey: true, altKey: true },
+  [$FOCUS]:   { code: "Space", ctrlKey: true },
 });
+const BUBBLING_AND_COMPOSED = Object.freeze({
+  bubbles: true, composed: true });
 class DiaControllerKeyboard extends LitElement {
   static get properties() {
     return {
-      controller: { type: Element },
-      target: { type: Object }
+      target: { type: HTMLElement, attribute: false }
     }
   }
   constructor() {
     super();
-    this.controller = undefined;
+    console.debug( "dia-controller-keyboard › constructor()");
+    this._onKeyUp = this._onKeyUp.bind( this);
+    this.target = undefined;
   }
-  registerKeyboardListeners( target) {
+  updated( changedProperties) {
+    console.debug( "dia-controller-keyboard › updated()", changedProperties);
+    if( changedProperties.has( "target")) {
+      const oldTarget = changedProperties.get( "target");
+      if( typeof oldTarget !== "undefined") {
+        this._unregisterKeyboardListener( oldTarget);
+      }
+      this._registerKeyboardListener( this.target);
+    }
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    console.debug( "dia-controller-keyboard › disconnected()");
+    this._unregisterKeyboardListener( this.target);
+    this.target = undefined;
+  }
+  _registerKeyboardListener( target) {
     target.setAttribute( "tabIndex", "-1");
     target.focus();
-    target.addEventListener( "keyup", this.onKeyUp.bind( this));
+    target.addEventListener( "keyup", this._onKeyUp);
   }
-  getAction(e) {
-    const action = Object.keys(KEYBOARD_BINDINGS).find( (action) => {
-      return e.code == KEYBOARD_BINDINGS[action].code
-        && e.ctrlKey == (KEYBOARD_BINDINGS[action].ctrlKey || false)
-        && e.altKey == (KEYBOARD_BINDINGS[action].altKey || false);
-    });
-    return action;
+  _unregisterKeyboardListener( target) {
+    target.removeEventListener( "keyup", this._onKeyUp);
   }
-  onKeyUp( e) {
-    const action = this.getAction(e);
-    switch( action){
-      case "FULLSCREEN":
-        this.controller.fullscreen();
+  _matchAction( e) {
+    return Reflect.ownKeys( KEYBOARD_BINDINGS)
+      .find(( action) =>
+           e.code    ===  KEYBOARD_BINDINGS[ action].code
+        && e.ctrlKey === (KEYBOARD_BINDINGS[ action].ctrlKey || false)
+        && e.altKey  === (KEYBOARD_BINDINGS[ action].altKey  || false));
+  }
+  _onKeyUp( keyboardEvent) {
+    const matchingAction = this._matchAction( keyboardEvent);
+    switch( matchingAction){
+      case $FULLSCREEN:
+        this.dispatchEvent( new CustomEvent( "fullscreen-requested", BUBBLING_AND_COMPOSED));
         break;
-      case "DETACH":
-        this.controller.detach();
+      case $DETACH:
+        this.dispatchEvent( new CustomEvent( "detach-requested", BUBBLING_AND_COMPOSED));
         break;
-      case "NEXT":
-        this.controller.next();
+      case $NEXT:
+        this.dispatchEvent( new CustomEvent( "next-slide-requested", BUBBLING_AND_COMPOSED));
         break;
-      case "PREVIOUS":
-        this.controller.previous();
+      case $PREVIOUS:
+        this.dispatchEvent( new CustomEvent( "previous-slide-requested", BUBBLING_AND_COMPOSED));
         break;
-      case "RESYNC":
-        this.controller.resync();
+      case $RESYNC:
+        this.dispatchEvent( new CustomEvent( "resync-requested", BUBBLING_AND_COMPOSED));
         break;
-      case "FOCUS":
-        this.controller.focus();
+      case $FOCUS:
+        this.dispatchEvent( new CustomEvent( "focus-requested", BUBBLING_AND_COMPOSED));
         break;
-      case "TOGGLESPEAKER":
-        this.controller.toggleSpeaker();
+      case $SPEAKER:
+        this.dispatchEvent( new CustomEvent( "speaker-toggle-requested", BUBBLING_AND_COMPOSED));
         break;
     }
   }
-  disconnectedCallback(){
-    super.disconnectedCallback();
-    target.removeEventListener( "keyup", this.onKeyUp);
+}
+customElements.define( "dia-controller-keyboard", DiaControllerKeyboard);
+
+const TOUCH_EVENT_RE = /^touch(start|end|move)$/;
+const SWIPE_RATIO_THRESHOLD = 0.15;
+const BUBBLING_AND_COMPOSED$1 = Object.freeze({
+  bubbles: true, composed: true });
+class DiaControllerPointer extends LitElement {
+  static get properties() {
+    return {
+      target: { type: HTMLElement, attribute: false }
+    }
+  }
+  constructor() {
+    super();
+    console.debug( "dia-controller-pointer › constructor()");
+    this.onMouseMove = (event) => this.handlePointerMove( event);
+    this.onMouseDown = (event) => this.handlePointerDown( event);
+    this.onMouseUp = (event) => this.handlePointerUp( event);
+    this.onTouchMove = (event) => this.handlePointerMove( event);
+    this.onTouchStart = (event) => this.handlePointerDown( event);
+    this.onTouchEnd = (event) => this.handlePointerUp( event);
     this.target = undefined;
+    this.pointerIsDown = false;
+    this.touchMode = undefined;
+    this.lastTouches = undefined;
+    this.lastPointerPosition = { x: undefined, y: undefined };
+  }
+  updated( changedProperties) {
+    console.debug( "dia-controller-pointer › updated()", changedProperties);
+    if( changedProperties.has( "target")) {
+      const oldTarget = changedProperties.get( "target");
+      if( typeof oldTarget !== "undefined") {
+        this._unregisterPointerListeners( oldTarget);
+      }
+      this._registerPointerListeners( this.target);
+    }
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    console.debug( "dia-controller-pointer › disconnected()");
+    this._unregisterPointerListeners( this.target);
+    this.target = null;
+  }
+  _registerPointerListeners( target) {
+    target.addEventListener( "mousemove", this.onMouseMove);
+    target.addEventListener( "mousedown", this.onMouseDown);
+    target.addEventListener( "touchstart", this.onTouchStart);
+    target.addEventListener( "touchmove", this.onTouchMove);
+    self.addEventListener( "mouseup", this.onMouseUp);
+    self.addEventListener( "touchend", this.onTouchEnd);
+    target.style.cursor = "grab";
+  }
+  _unregisterPointerListeners( target) {
+    target.removeEventListener( "mousemove", this.onMouseMove);
+    target.removeEventListener( "mousedown", this.onMouseDown);
+    target.removeEventListener( "wheel", this.onWheel);
+    target.removeEventListener( "keydown", this.onKeyDown);
+    target.removeEventListener( "touchstart", this.onTouchStart);
+    target.removeEventListener( "touchmove", this.onTouchMove);
+    self.removeEventListener( "mouseup", this.onMouseUp);
+    self.removeEventListener( "touchend", this.onTouchEnd);
+    target.style.cursor = "";
+  }
+  pixelLengthToWidthRatio( pixelLength) {
+    return pixelLength / this.target.clientWidth;
+  }
+  twoTouchDistance( touchOne, touchTwo) {
+    const { clientX: xOne, clientY: yOne } = touchOne,
+          { clientX: xTwo, clientY: yTwo } = touchTwo;
+    const xDelta = xTwo - xOne,
+          yDelta = yTwo - yOne;
+    return Math.sqrt( xDelta * xDelta + yDelta * yDelta);
+  }
+  handlePointerMove( event) {
+    if( !this.pointerIsDown) { return; }
+    console.debug( "dia-controller-pointer › handlePointerMove()", this);
+    let handled = false;
+    if( TOUCH_EVENT_RE.test( event.type)) {
+      const { touches } = event;
+      if( this.touchMode === "swipe") {
+          const { clientX: xOne } = this.lastTouches[ 0],
+                { clientX: xTwo } = touches[ 0];
+          const deltaWidth = this.pixelLengthToWidthRatio( xTwo - xOne);
+          if( deltaWidth >= SWIPE_RATIO_THRESHOLD) {
+            this.dispatchEvent( new CustomEvent( "previous-slide-requested", BUBBLING_AND_COMPOSED$1));
+            handled = true;
+          }
+          if( deltaWidth <= -SWIPE_RATIO_THRESHOLD) {
+            this.dispatchEvent( new CustomEvent( "next-slide-requested", BUBBLING_AND_COMPOSED$1));
+            handled = true;
+          }
+      }
+      this.lastTouches = touches;
+    } else {
+      const { clientX: x } = event;
+      const deltaWidth = this.pixelLengthToWidthRatio( x - this.lastPointerPosition.x);
+      if( deltaWidth >= SWIPE_RATIO_THRESHOLD) {
+        this.dispatchEvent( new CustomEvent( "previous-slide-requested", BUBBLING_AND_COMPOSED$1));
+        handled = true;
+      }
+      if( deltaWidth <= -SWIPE_RATIO_THRESHOLD) {
+        this.dispatchEvent( new CustomEvent( "next-slide-requested", BUBBLING_AND_COMPOSED$1));
+        handled = true;
+      }
+      this.lastPointerPosition.x = x;
+    }
+    if( handled && event.cancelable) {
+      event.preventDefault();
+    }
+  }
+  handlePointerDown( event) {
+    console.debug( "dia-controller-pointer › handlePointerDown()", this);
+    this.pointerIsDown = true;
+    if( TOUCH_EVENT_RE.test( event.type)) {
+      const { touches } = event;
+      switch( touches.length) {
+        default:
+        case 1:
+          this.touchMode = "swipe";
+          break;
+        case 2:
+          this.touchMode = "zoom";
+          break;
+      }
+      this.lastTouches = touches;
+    } else {
+      const { clientX: x, clientY: y } = event;
+      this.lastPointerPosition.x = x;
+      this.lastPointerPosition.y = y;
+      this.target.style.cursor = "grabbing";
+    }
+  }
+  handlePointerUp( _event) {
+    console.debug( "dia-controller-pointer › handlePointerUp()", this);
+    this.target.style.cursor = "grab";
+    this.pointerIsDown = false;
   }
 }
-customElements.define("dia-controller-keyboard", DiaControllerKeyboard);
+customElements.define( "dia-controller-pointer", DiaControllerPointer);
 
 class DiaControllerRemoteFirebase extends LitElement {
   static get styles() {
@@ -533,16 +692,14 @@ class DiaController extends LitElement {
       display:       { type: String },
       speaker:       { type: Boolean },
       detached:      { type: Boolean },
-      target:        { type: Object },
-      _head:         { type: Object, attribute: true},
-      _liveHead:     { type: String, attribute: "live-head"},
-      _detachedHead: { type: String, attribute: "detached-head"},
+      target:        { type: Object }
     }
   }
   render() {
     return html`
       <slot></slot>
       <dia-controller-keyboard></dia-controller-keyboard>
+      <dia-controller-pointer></dia-controller-pointer>
       <dia-controller-remote-firebase room-id="room:main"></dia-controller-remote-firebase>
       <slot name="after"></slot>
     `;
@@ -551,24 +708,32 @@ class DiaController extends LitElement {
     super();
     this.slide        = undefined;
     this.display      = undefined;
-    this.head         = {slide: undefined, display: undefined};
-    this.liveHead     = undefined;
-    this.detachedHead = undefined;
-    this.detached     = false;
     this.speaker      = false;
     this.detached     = false;
-    this._target = undefined;
+    this.target       = undefined;
+    this.head         = { slide: undefined, display: undefined };
+    this.liveHead     = undefined;
+    this.detachedHead = undefined;
     this._keyboardController = undefined;
+    this._pointerController = undefined;
     this._remoteController = undefined;
     this.addEventListener( "live-head-updated", this._onLiveHeadUpdated.bind( this));
+    this.addEventListener( "next-slide-requested", this.next.bind( this));
+    this.addEventListener( "previous-slide-requested", this.previous.bind( this));
+    this.addEventListener( "fullscreen-requested", this.fullscreen.bind( this));
+    this.addEventListener( "speaker-toggle-requested", this.toggleSpeaker.bind( this));
+    this.addEventListener( "detach-requested", this.detach.bind( this));
+    this.addEventListener( "resync-requested", this.resync.bind( this));
+    this.addEventListener( "focus-requested", this.focus.bind( this));
   }
   firstUpdated() {
-    this._keyboardController = this.shadowRoot.querySelector("dia-controller-keyboard");
-    this._keyboardController.controller = this;
-    this._remoteController = this.shadowRoot.querySelector("dia-controller-remote-firebase");
+    this._keyboardController = this.shadowRoot.querySelector( "dia-controller-keyboard");
+    this._pointerController = this.shadowRoot.querySelector( "dia-controller-pointer");
+    this._remoteController = this.shadowRoot.querySelector( "dia-controller-remote-firebase");
     this._remoteController.controller = this;
   }
-  updated(changedProperties){
+  updated( changedProperties) {
+    console.debug( "dia-controller › updated()", changedProperties);
     if( changedProperties.has( "slide")) {
       this.head.slide = this.slide;
     }
@@ -591,28 +756,34 @@ class DiaController extends LitElement {
         this.detachedHead = this.head;
       }
     }
-    if( changedProperties.has( "target") && this.target != undefined) {
-      this._keyboardController.registerKeyboardListeners( this.target);
+    if( changedProperties.has( "target")) {
+      console.debug( "dia-controller › updated( target)", this.target);
+      if( this._keyboardController) {
+        this._keyboardController.target = this.target;
+      }
+      if( this._pointerController) {
+        this._pointerController.target = this.target;
+      }
     }
   }
-  next() {
+  next( _event) {
     console.debug( "dia-controller › next()");
-    if(this.target.slide == undefined) { return; }
+    if( this.target.slide == undefined) { return; }
     const slide = this.target.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[0];
     const nextSlide = slide.nextElementSibling;
     if(nextSlide != null && nextSlide.tagName == "DIA-SLIDE"){
-      const nextSlideID = nextSlide.getAttribute("id");
-      this.__dispatchEvt("slide-selected", {slide: nextSlideID});
-      const defaultDisplayID = this._getDefaultDisplayOfSlide(nextSlide);
-      if(!this.speaker) {
-        this.__dispatchEvt("display-selected", {display: defaultDisplayID});
+      const nextSlideID = nextSlide.getAttribute( "id");
+      this.__dispatchEvt( "slide-selected", { slide: nextSlideID });
+      const defaultDisplayID = this._getDefaultDisplayOfSlide( nextSlide);
+      if( !this.speaker) {
+        this.__dispatchEvt( "display-selected", { display: defaultDisplayID });
       }
-      if(this.speaker && !this.detached){
-        this._remoteController.updateLiveHead({slide: nextSlideID, display: defaultDisplayID});
+      if( this.speaker && !this.detached){
+        this._remoteController.updateLiveHead({ slide: nextSlideID, display: defaultDisplayID });
       }
     }
   }
-  previous() {
+  previous( _event) {
     console.debug( "dia-controller › previous()");
     if(this.target.slide == undefined) { return; }
     var slide = this.target.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[0];
@@ -629,25 +800,25 @@ class DiaController extends LitElement {
       }
     }
   }
-  _getDefaultDisplayOfSlide(slideElement) {
+  _getDefaultDisplayOfSlide( slideElement) {
     const defaultDiaPo = slideElement.querySelector( "dia-po[default]");
-    return defaultDiaPo.getAttribute("display");
+    return defaultDiaPo.getAttribute( "display");
   }
   moveTo( slide, display) {
     console.debug( "dia-controller › moveTo()", slide, display);
-    this.moveToSlide(slide);
-    this.moveToDisplay(display);
+    this.moveToSlide( slide);
+    this.moveToDisplay( display);
   }
   moveToSlide( slide) {
     console.debug( "dia-controller › moveToSlide()", slide);
-    this.__dispatchEvt("slide-selected", {slide: slide});
+    this.__dispatchEvt( "slide-selected", {slide: slide});
   }
   moveToDisplay( display) {
     console.debug( "dia-controller › moveToDisplay()", display);
-    this.__dispatchEvt("display-selected", {display: display});
+    this.__dispatchEvt( "display-selected", {display: display});
   }
-  detach() {
-    console.debug( "dia-controller › detach() from liveHead");
+  detach( _event) {
+    console.debug( "dia-controller › detach()");
     if( this.detached) {
       this.moveTo( null, null);
     } else {
@@ -655,10 +826,10 @@ class DiaController extends LitElement {
       this.detachedHead = this.head;
     }
   }
-  resync() {
-    console.debug( "dia-controller › resync() with liveHead");
+  resync( _event) {
+    console.debug( "dia-controller › resync()");
     this.detachedHead = undefined;
-    this.__dispatchEvt("detach-disabled");
+    this.__dispatchEvt( "detach-disabled");
     if( this.speaker && this.liveHead.slide == this.head.slide) {
       this.next();
     } else {
@@ -669,42 +840,41 @@ class DiaController extends LitElement {
       }
     }
   }
-  fullscreen() {
+  fullscreen( _event) {
     console.debug( "dia-controller › fullscreen()");
-    this.__dispatchEvt("fullscreen-enabled");
+    this.__dispatchEvt( "fullscreen-enabled");
   }
-  toggleSpeaker(){
+  toggleSpeaker( _event) {
     console.debug( "dia-controller › toggleSpeaker()");
-    if(!this.detached){
-      this.__dispatchEvt("speaker-toggled");
+    if( !this.detached){
+      this.__dispatchEvt( "speaker-toggled");
       if(this.head.slide != this.liveHead.slide){this.resync();}
     }
   }
-  focus(){
+  focus( _event) {
     console.debug( "dia-controller › focus()");
     if(this.speaker && this.detached) {
       this._remoteController.updateLiveHead(this.head);
-      this.__dispatchEvt("detach-disabled");
+      this.__dispatchEvt( "detach-disabled");
     }
   }
-  _onLiveHeadUpdated(e){
+  _onLiveHeadUpdated( e){
     const prevLiveHead = this.liveHead;
     this.liveHead = e.detail.liveHead;
     console.debug( "dia-controller › on-live-head-updated(): ", e.detail.liveHead);
-    if(prevLiveHead == undefined){
+    if( prevLiveHead == undefined){
       this.resync();
-    } else if(!this.detached) {
+    } else if( !this.detached) {
       if(this.speaker) {
-        this.moveToSlide(this.liveHead.slide);
+        this.moveToSlide( this.liveHead.slide);
       } else {
-        this.moveTo(this.liveHead.slide, this.liveHead.display);
+        this.moveTo( this.liveHead.slide, this.liveHead.display);
       }
     }
   }
-  __dispatchEvt(name, detail, bubbles=true, composed=true){
-    this.dispatchEvent( new CustomEvent(name, {
-      detail: detail, bubbles: bubbles, composed: composed
-    }));
+  __dispatchEvt( name, detail, bubbles = true, composed = true){
+    this.dispatchEvent(
+      new CustomEvent( name, { detail, bubbles, composed }));
   }
 }
 customElements.define( "dia-controller", DiaController);

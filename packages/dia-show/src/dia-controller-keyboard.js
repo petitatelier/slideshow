@@ -19,7 +19,7 @@ const KEYBOARD_BINDINGS = Object.freeze({
   [$DETACH]:  { code: "Escape" },
   // Requests to activate next slide — either in live- or detached mode
   [$NEXT]:    { code: "ArrowRight" },
-  // Requests to activate previous slide — either in live- or detached mode
+  // Requests to activate previous slide — either in live- or detached mode
   [$PREVIOUS]:    { code: "ArrowLeft" },
   // Requests to resync with live head, from detached mode
   [$RESYNC]:  { code: "Space" },
@@ -34,7 +34,7 @@ const BUBBLING_AND_COMPOSED = Object.freeze({
   bubbles: true, composed: true });
 
 /**
- * Maps keyboard presses to slideshow features, such as:
+ * Maps keyboard presses to slideshow features:
  *
  * - navigating thru the slides (left `⟵` and right `⟶` arrows)
  * - go fullscreen (`F`)
@@ -65,8 +65,12 @@ export class DiaControllerKeyboard extends LitElement {
   }
 
   constructor() {
-    console.debug( "dia-controller-keyboard › constructor()");
     super();
+    console.debug( "dia-controller-keyboard › constructor()");
+
+    // Bind event listeners to this instance (at construction time,
+    // to ensure that we register/unregister the same function)
+    this._onKeyUp = this._onKeyUp.bind( this);
 
     // Public observed properties
     this.target = undefined;
@@ -87,8 +91,8 @@ export class DiaControllerKeyboard extends LitElement {
   }
 
   disconnectedCallback() {
-    console.debug( "dia-controller-keyboard › disconnected()");
     super.disconnectedCallback();
+    console.debug( "dia-controller-keyboard › disconnected()");
     this._unregisterKeyboardListener( this.target);
     this.target = undefined;
   }
@@ -96,7 +100,7 @@ export class DiaControllerKeyboard extends LitElement {
   _registerKeyboardListener( target) {
     target.setAttribute( "tabIndex", "-1"); // Set target ‹dia-show› element to be focusable
     target.focus();                         // and focus it, to listen the keyboard
-    target.addEventListener( "keyup", this._onKeyUp.bind( this));
+    target.addEventListener( "keyup", this._onKeyUp);
   }
 
   _unregisterKeyboardListener( target) {
