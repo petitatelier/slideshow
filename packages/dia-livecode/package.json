@@ -1,6 +1,6 @@
 {
   "name": "@petitatelier/dia-livecode",
-  "version": "0.2.9",
+  "version": "0.2.11",
   "description": "The ‹dia-livecode› web component embeds the Glitch collaborative code editor in a diapositive of a slideshow",
   "author": "Olivier & Yves Lange",
   "license": "BSD-3-Clause",
@@ -14,7 +14,7 @@
     "clean": "rm -rf dist/"
   },
   "dependencies": {
-    "@petitatelier/dia-styles": "^0.2.9",
+    "@petitatelier/dia-styles": "^0.2.11",
     "lit-element": "^2.0.1"
   },
   "devDependencies": {
