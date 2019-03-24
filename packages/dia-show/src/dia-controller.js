@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit-element";
-import { DiaControllerStyles } from "@petitatelier/dia-styles";
+import { CommonStyles, DiaControllerStyles } from "@petitatelier/dia-styles";
 import "./dia-controller-keyboard.js";
 import "./dia-controller-pointer.js";
 import "./dia-controller-remote-firebase.js";
@@ -12,7 +12,7 @@ import "./dia-controller-remote-firebase.js";
 
 export class DiaController extends LitElement {
   static get styles() {
-    return [ DiaControllerStyles ];
+    return [ CommonStyles, DiaControllerStyles ];
   }
 
   static get properties() {
@@ -31,6 +31,8 @@ export class DiaController extends LitElement {
       <dia-controller-keyboard></dia-controller-keyboard>
       <dia-controller-pointer></dia-controller-pointer>
       <dia-controller-remote-firebase room-id="room:main"></dia-controller-remote-firebase>
+      <button id="prevSlide" @click="${this.previous}"> « </button>
+      <button id="nextSlide" @click="${this.next}"> » </button>
       <slot name="after"></slot>
     `;
   }
