@@ -394,7 +394,7 @@ class DiaControllerKeyboard extends litElement.LitElement {
 customElements.define( "dia-controller-keyboard", DiaControllerKeyboard);
 
 const TOUCH_EVENT_RE = /^touch(start|end|move)$/;
-const SWIPE_RATIO_THRESHOLD = 0.15;
+const SWIPE_LENGTH_THRESHOLD = 0.05;
 const BUBBLING_AND_COMPOSED$1 = Object.freeze({
   bubbles: true, composed: true });
 class DiaControllerPointer extends litElement.LitElement {
@@ -416,7 +416,9 @@ class DiaControllerPointer extends litElement.LitElement {
     this.pointerIsDown = false;
     this.touchMode = undefined;
     this.lastTouches = undefined;
+    this.initialTouches = undefined;
     this.lastPointerPosition = { x: undefined, y: undefined };
+    this.initialPointerPosition = { x: undefined, y: undefined };
   }
   updated( changedProperties) {
     console.debug( "dia-controller-pointer › updated()", changedProperties);
@@ -446,8 +448,6 @@ class DiaControllerPointer extends litElement.LitElement {
   _unregisterPointerListeners( target) {
     target.removeEventListener( "mousemove", this.onMouseMove);
     target.removeEventListener( "mousedown", this.onMouseDown);
-    target.removeEventListener( "wheel", this.onWheel);
-    target.removeEventListener( "keydown", this.onKeyDown);
     target.removeEventListener( "touchstart", this.onTouchStart);
     target.removeEventListener( "touchmove", this.onTouchMove);
     self.removeEventListener( "mouseup", this.onMouseUp);
@@ -457,55 +457,23 @@ class DiaControllerPointer extends litElement.LitElement {
   pixelLengthToWidthRatio( pixelLength) {
     return pixelLength / this.target.clientWidth;
   }
-  twoTouchDistance( touchOne, touchTwo) {
-    const { clientX: xOne, clientY: yOne } = touchOne,
-          { clientX: xTwo, clientY: yTwo } = touchTwo;
-    const xDelta = xTwo - xOne,
-          yDelta = yTwo - yOne;
-    return Math.sqrt( xDelta * xDelta + yDelta * yDelta);
-  }
   handlePointerMove( event) {
     if( !this.pointerIsDown) { return; }
-    console.debug( "dia-controller-pointer › handlePointerMove()", this);
-    let handled = false;
     if( TOUCH_EVENT_RE.test( event.type)) {
       const { touches } = event;
-      if( this.touchMode === "swipe") {
-          const { clientX: xOne } = this.lastTouches[ 0],
-                { clientX: xTwo } = touches[ 0];
-          const deltaWidth = this.pixelLengthToWidthRatio( xTwo - xOne);
-          if( deltaWidth >= SWIPE_RATIO_THRESHOLD) {
-            this.dispatchEvent( new CustomEvent( "previous-slide-requested", BUBBLING_AND_COMPOSED$1));
-            handled = true;
-          }
-          if( deltaWidth <= -SWIPE_RATIO_THRESHOLD) {
-            this.dispatchEvent( new CustomEvent( "next-slide-requested", BUBBLING_AND_COMPOSED$1));
-            handled = true;
-          }
-      }
       this.lastTouches = touches;
     } else {
-      const { clientX: x } = event;
-      const deltaWidth = this.pixelLengthToWidthRatio( x - this.lastPointerPosition.x);
-      if( deltaWidth >= SWIPE_RATIO_THRESHOLD) {
-        this.dispatchEvent( new CustomEvent( "previous-slide-requested", BUBBLING_AND_COMPOSED$1));
-        handled = true;
-      }
-      if( deltaWidth <= -SWIPE_RATIO_THRESHOLD) {
-        this.dispatchEvent( new CustomEvent( "next-slide-requested", BUBBLING_AND_COMPOSED$1));
-        handled = true;
-      }
+      const { clientX: x, clientY: y } = event;
       this.lastPointerPosition.x = x;
-    }
-    if( handled && event.cancelable) {
-      event.preventDefault();
+      this.lastPointerPosition.y = y;
     }
   }
   handlePointerDown( event) {
-    console.debug( "dia-controller-pointer › handlePointerDown()", this);
     this.pointerIsDown = true;
     if( TOUCH_EVENT_RE.test( event.type)) {
       const { touches } = event;
+      this.initialTouches = touches;
+      this.lastTouches = touches;
       switch( touches.length) {
         default:
         case 1:
@@ -515,18 +483,49 @@ class DiaControllerPointer extends litElement.LitElement {
           this.touchMode = "zoom";
           break;
       }
-      this.lastTouches = touches;
     } else {
       const { clientX: x, clientY: y } = event;
+      this.initialPointerPosition.x = x;
+      this.initialPointerPosition.y = y;
       this.lastPointerPosition.x = x;
       this.lastPointerPosition.y = y;
       this.target.style.cursor = "grabbing";
     }
   }
-  handlePointerUp( _event) {
-    console.debug( "dia-controller-pointer › handlePointerUp()", this);
+  handlePointerUp( event) {
     this.target.style.cursor = "grab";
     this.pointerIsDown = false;
+    let handled = false;
+    if( TOUCH_EVENT_RE.test( event.type)) {
+      if( this.touchMode === "swipe") {
+        const { clientX: x1 } = this.initialTouches[ 0],
+              { clientX: x2 } = this.lastTouches[ 0],
+              deltaWidth = this.pixelLengthToWidthRatio( x2 - x1);
+        if( deltaWidth >= SWIPE_LENGTH_THRESHOLD) {
+          this.dispatchEvent( new CustomEvent( "previous-slide-requested", BUBBLING_AND_COMPOSED$1));
+          handled = true;
+        }
+        else if( deltaWidth <= -SWIPE_LENGTH_THRESHOLD) {
+          this.dispatchEvent( new CustomEvent( "next-slide-requested", BUBBLING_AND_COMPOSED$1));
+          handled = true;
+        }
+      }
+    } else {
+      const { x: x1 } = this.initialPointerPosition,
+            { x: x2 } = this.lastPointerPosition,
+            deltaWidth = this.pixelLengthToWidthRatio( x2 - x1);
+      if( deltaWidth >= SWIPE_LENGTH_THRESHOLD) {
+        this.dispatchEvent( new CustomEvent( "previous-slide-requested", BUBBLING_AND_COMPOSED$1));
+        handled = true;
+      }
+      else if( deltaWidth <= -SWIPE_LENGTH_THRESHOLD) {
+        this.dispatchEvent( new CustomEvent( "next-slide-requested", BUBBLING_AND_COMPOSED$1));
+        handled = true;
+      }
+    }
+    if( handled && event.cancelable) {
+      event.stopPropagation();
+    }
   }
 }
 customElements.define( "dia-controller-pointer", DiaControllerPointer);
@@ -686,7 +685,7 @@ customElements.define( "dia-controller-remote-firebase", DiaControllerRemoteFire
 
 class DiaController extends litElement.LitElement {
   static get styles() {
-    return [ diaStyles.DiaControllerStyles ];
+    return [ diaStyles.CommonStyles, diaStyles.DiaControllerStyles ];
   }
   static get properties() {
     return {
@@ -703,6 +702,8 @@ class DiaController extends litElement.LitElement {
       <dia-controller-keyboard></dia-controller-keyboard>
       <dia-controller-pointer></dia-controller-pointer>
       <dia-controller-remote-firebase room-id="room:main"></dia-controller-remote-firebase>
+      <button id="prevSlide" @click="${this.previous}"> « </button>
+      <button id="nextSlide" @click="${this.next}"> » </button>
       <slot name="after"></slot>
     `;
   }

@@ -1,23 +1,7 @@
-/*
- * Copyright 2019 Le Petit Atelier de Génie logiciel sàrl.
- * Copyright 2018 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the 'License');
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 import { LitElement } from "lit-element";
 
 const TOUCH_EVENT_RE = /^touch(start|end|move)$/;
-const SWIPE_RATIO_THRESHOLD = 0.15;
+const SWIPE_LENGTH_THRESHOLD = 0.05;
 
 // Event init options of the custom events fired by this class
 const BUBBLING_AND_COMPOSED = Object.freeze({
@@ -35,7 +19,8 @@ const BUBBLING_AND_COMPOSED = Object.freeze({
  * @fires CustomEvent#next-slide-requested
  * @fires CustomEvent#previous-slide-requested
  *
- * Derivated from GoogleWebComponents › model-viewer › three-components › SmoothControls.ts
+ * Inspired from GoogleWebComponents › model-viewer › three-components › SmoothControls
+ * although gestures are detected at time of `handlePointerUp()`, rather than `handlePointerMove()`
  * @see https://github.com/GoogleWebComponents/model-viewer/blob/master/src/three-components/SmoothControls.ts
  */
 export class DiaControllerPointer extends LitElement {
@@ -67,7 +52,9 @@ export class DiaControllerPointer extends LitElement {
     this.pointerIsDown = false;
     this.touchMode = undefined; // "swipe" | "zoom"
     this.lastTouches = undefined; // TouchList
+    this.initialTouches = undefined; // TouchList
     this.lastPointerPosition = { x: undefined, y: undefined };
+    this.initialPointerPosition = { x: undefined, y: undefined };
   }
 
   updated( changedProperties) {
@@ -106,8 +93,6 @@ export class DiaControllerPointer extends LitElement {
   _unregisterPointerListeners( target) {
     target.removeEventListener( "mousemove", this.onMouseMove);
     target.removeEventListener( "mousedown", this.onMouseDown);
-    target.removeEventListener( "wheel", this.onWheel);
-    target.removeEventListener( "keydown", this.onKeyDown);
     target.removeEventListener( "touchstart", this.onTouchStart);
     target.removeEventListener( "touchmove", this.onTouchMove);
 
@@ -121,63 +106,29 @@ export class DiaControllerPointer extends LitElement {
     return pixelLength / this.target.clientWidth;
   }
 
-  twoTouchDistance( touchOne, touchTwo) {
-    const { clientX: xOne, clientY: yOne } = touchOne,
-          { clientX: xTwo, clientY: yTwo } = touchTwo;
-    const xDelta = xTwo - xOne,
-          yDelta = yTwo - yOne;
-    return Math.sqrt( xDelta * xDelta + yDelta * yDelta);
-  }
-
   // event is MouseEvent or TouchEvent
   handlePointerMove( event) {
     if( !this.pointerIsDown) { return; }
 
-    console.debug( "dia-controller-pointer › handlePointerMove()", this);
-    let handled = false;
-
     if( TOUCH_EVENT_RE.test( event.type)) {
       const { touches } = event; // TouchEvent
-      if( this.touchMode === "swipe") {
-          const { clientX: xOne } = this.lastTouches[ 0],
-                { clientX: xTwo } = touches[ 0];
-          const deltaWidth = this.pixelLengthToWidthRatio( xTwo - xOne);
-          if( deltaWidth >= SWIPE_RATIO_THRESHOLD) {
-            this.dispatchEvent( new CustomEvent( "previous-slide-requested", BUBBLING_AND_COMPOSED));
-            handled = true;
-          }
-          if( deltaWidth <= -SWIPE_RATIO_THRESHOLD) {
-            this.dispatchEvent( new CustomEvent( "next-slide-requested", BUBBLING_AND_COMPOSED));
-            handled = true;
-          }
-      }
       this.lastTouches = touches;
     } else {
-      const { clientX: x } = event; // MouseEvent
-      const deltaWidth = this.pixelLengthToWidthRatio( x - this.lastPointerPosition.x);
-      if( deltaWidth >= SWIPE_RATIO_THRESHOLD) {
-        this.dispatchEvent( new CustomEvent( "previous-slide-requested", BUBBLING_AND_COMPOSED));
-        handled = true;
-      }
-      if( deltaWidth <= -SWIPE_RATIO_THRESHOLD) {
-        this.dispatchEvent( new CustomEvent( "next-slide-requested", BUBBLING_AND_COMPOSED));
-        handled = true;
-      }
+      const { clientX: x, clientY: y } = event; // MouseEvent
       this.lastPointerPosition.x = x;
-    }
-
-    if( handled && event.cancelable) {
-      event.preventDefault();
+      this.lastPointerPosition.y = y;
     }
   }
 
   // event is MouseEvent or TouchEvent
   handlePointerDown( event) {
-    console.debug( "dia-controller-pointer › handlePointerDown()", this);
     this.pointerIsDown = true;
 
     if( TOUCH_EVENT_RE.test( event.type)) {
       const { touches } = event; // TouchEvent
+
+      this.initialTouches = touches;
+      this.lastTouches = touches;
 
       switch( touches.length) {
         default:
@@ -185,15 +136,14 @@ export class DiaControllerPointer extends LitElement {
           this.touchMode = "swipe";
           break;
         case 2:
-          this.touchMode = "zoom";
+          this.touchMode = "zoom"; // for future use
           break;
       }
-
-      this.lastTouches = touches;
-
     } else {
       const { clientX: x, clientY: y } = event; // MouseEvent
 
+      this.initialPointerPosition.x = x;
+      this.initialPointerPosition.y = y;
       this.lastPointerPosition.x = x;
       this.lastPointerPosition.y = y;
 
@@ -201,11 +151,42 @@ export class DiaControllerPointer extends LitElement {
     }
   }
 
-  // eslint-disable-next-line no-unused-vars
-  handlePointerUp( _event) {
-    console.debug( "dia-controller-pointer › handlePointerUp()", this);
+  handlePointerUp( event) {
     this.target.style.cursor = "grab";
     this.pointerIsDown = false;
+
+    let handled = false;
+    if( TOUCH_EVENT_RE.test( event.type)) {
+      // this.touchMode === "zoom": no-op
+      if( this.touchMode === "swipe") {
+        const { clientX: x1 } = this.initialTouches[ 0],
+              { clientX: x2 } = this.lastTouches[ 0],
+              deltaWidth = this.pixelLengthToWidthRatio( x2 - x1);
+        if( deltaWidth >= SWIPE_LENGTH_THRESHOLD) {
+          this.dispatchEvent( new CustomEvent( "previous-slide-requested", BUBBLING_AND_COMPOSED));
+          handled = true;
+        }
+        else if( deltaWidth <= -SWIPE_LENGTH_THRESHOLD) {
+          this.dispatchEvent( new CustomEvent( "next-slide-requested", BUBBLING_AND_COMPOSED));
+          handled = true;
+        }
+      }
+    } else {
+      const { x: x1 } = this.initialPointerPosition,
+            { x: x2 } = this.lastPointerPosition,
+            deltaWidth = this.pixelLengthToWidthRatio( x2 - x1);
+      if( deltaWidth >= SWIPE_LENGTH_THRESHOLD) {
+        this.dispatchEvent( new CustomEvent( "previous-slide-requested", BUBBLING_AND_COMPOSED));
+        handled = true;
+      }
+      else if( deltaWidth <= -SWIPE_LENGTH_THRESHOLD) {
+        this.dispatchEvent( new CustomEvent( "next-slide-requested", BUBBLING_AND_COMPOSED));
+        handled = true;
+      }
+    }
+    if( handled && event.cancelable) {
+      event.stopPropagation();
+    }
   }
 }
 
