@@ -1,6 +1,6 @@
 {
   "name": "@petitatelier/dia-show",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "description": "A multiplex slideshow system, allowing one or more speakers to drive the same presentation, spreading its display on multiple displays",
   "author": "Olivier & Yves Lange",
   "license": "BSD-3-Clause",
