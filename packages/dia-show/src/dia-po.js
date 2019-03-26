@@ -27,7 +27,9 @@ export class DiaPo extends LitElement {
   }
 
   render() {
-    return html`<div><slot>‹dia-po ${this.display}›</slot></div>`;
+    return html`<div><slot>
+        ‹dia-po ${this.parentSlide}:${this.display}${this.default ? " default" : ""}›
+      </slot></div>`;
   }
 
   constructor() {
