@@ -46,6 +46,8 @@ class DiaShow extends LitElement {
     this.addEventListener( "detach-enabled", this._onDetachEnabled);
     this.addEventListener( "detach-disabled", this._onDetachDisabled);
     this.addEventListener( "fullscreen-enabled", this._onFullscreenEnabled);
+    this.addEventListener( "next-slide-requested", this.moveNext.bind( this));
+    this.addEventListener( "previous-slide-requested", this.movePrevious.bind( this));
     this.speaker = false;
     this.detached = false;
     this.slide = undefined;
@@ -93,6 +95,54 @@ class DiaShow extends LitElement {
       displays.add( element.getAttribute( "display"));
     });
     return displays;
+  }
+  __dispatchEvt( name, detail, bubbles = true, composed = true){
+    this.dispatchEvent(
+      new CustomEvent( name, { detail, bubbles, composed }));
+  }
+  _getDefaultDiapoOfSlide( slideElement) {
+    const defaultDiaPo = slideElement.querySelector( "dia-po[default]");
+    return defaultDiaPo !== null
+      ? defaultDiaPo.getAttribute( "display")
+      : undefined;
+  }
+  _precedingSiblingSlide( slideId) {
+    const xpathResult = document.evaluate(
+      `//dia-slide[@id="${slideId}"]/preceding-sibling::dia-slide[position()=1]`,
+      this, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+    return xpathResult.singleNodeValue;
+  }
+  _followingSiblingSlide( slideId) {
+    const xpathResult = document.evaluate(
+      `//dia-slide[@id="${slideId}"]/following-sibling::dia-slide[position()=1]`,
+      this, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+    return xpathResult.singleNodeValue;
+  }
+  moveNext( _event) {
+    console.debug( "dia-show › moveNext()");
+    if( typeof this.slide === "undefined") { return; }
+    const nextSlideElement = this._followingSiblingSlide( this.slide);
+    if( nextSlideElement !== null) {
+      const nextSlideID = nextSlideElement.getAttribute( "id");
+      this.__dispatchEvt( "slide-selected", { slide: nextSlideID });
+      const defaultDisplayID = this._getDefaultDiapoOfSlide( nextSlideElement);
+      if( !this.speaker && typeof defaultDisplayID !== "undefined") {
+        this.__dispatchEvt( "display-selected", { display: defaultDisplayID });
+      }
+    }
+  }
+  movePrevious( _event) {
+    console.debug( "dia-show › movePrevious()");
+    if( typeof this.slide == "undefined") { return; }
+    const prevSlideElement = this._precedingSiblingSlide( this.slide);
+    if( prevSlideElement !== null) {
+      const prevSlideID = prevSlideElement.getAttribute( "id");
+      this.__dispatchEvt( "slide-selected", { slide: prevSlideID });
+      const defaultDisplayID = this._getDefaultDiapoOfSlide( prevSlideElement);
+      if(!this.speaker && typeof defaultDisplayID !== "undefined") {
+        this.__dispatchEvt( "display-selected", { display: defaultDisplayID });
+      }
+    }
   }
   _onDisplaySelected( e) {
     const selectedDisplay = e.detail.display;
@@ -215,7 +265,9 @@ class DiaPo extends LitElement {
     }
   }
   render() {
-    return html`<div><slot>‹dia-po ${this.display}›</slot></div>`;
+    return html`<div><slot>
+        ‹dia-po ${this.parentSlide}:${this.display}${this.default ? " default" : ""}›
+      </slot></div>`;
   }
   constructor() {
     super();
@@ -719,8 +771,6 @@ class DiaController extends LitElement {
     this._pointerController = undefined;
     this._remoteController = undefined;
     this.addEventListener( "live-head-updated", this._onLiveHeadUpdated.bind( this));
-    this.addEventListener( "next-slide-requested", this.next.bind( this));
-    this.addEventListener( "previous-slide-requested", this.previous.bind( this));
     this.addEventListener( "fullscreen-requested", this.fullscreen.bind( this));
     this.addEventListener( "speaker-toggle-requested", this.toggleSpeaker.bind( this));
     this.addEventListener( "detach-requested", this.detach.bind( this));
@@ -767,44 +817,6 @@ class DiaController extends LitElement {
       }
     }
   }
-  next( _event) {
-    console.debug( "dia-controller › next()");
-    if( this.target.slide == undefined) { return; }
-    const slide = this.target.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[0];
-    const nextSlide = slide.nextElementSibling;
-    if(nextSlide != null && nextSlide.tagName == "DIA-SLIDE"){
-      const nextSlideID = nextSlide.getAttribute( "id");
-      this.__dispatchEvt( "slide-selected", { slide: nextSlideID });
-      const defaultDisplayID = this._getDefaultDisplayOfSlide( nextSlide);
-      if( !this.speaker) {
-        this.__dispatchEvt( "display-selected", { display: defaultDisplayID });
-      }
-      if( this.speaker && !this.detached){
-        this._remoteController.updateLiveHead({ slide: nextSlideID, display: defaultDisplayID });
-      }
-    }
-  }
-  previous( _event) {
-    console.debug( "dia-controller › previous()");
-    if(this.target.slide == undefined) { return; }
-    var slide = this.target.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[0];
-    var prevSlide = slide.previousElementSibling;
-    if(prevSlide != null && prevSlide.tagName == "DIA-SLIDE"){
-      const prevSlideID = prevSlide.getAttribute("id");
-      this.__dispatchEvt("slide-selected", {slide: prevSlideID});
-      const defaultDisplayID = this._getDefaultDisplayOfSlide(prevSlide);
-      if(!this.speaker) {
-        this.__dispatchEvt("display-selected", {display: defaultDisplayID});
-      }
-      if(this.speaker && !this.detached){
-        this._remoteController.updateLiveHead({slide: prevSlideID, display: defaultDisplayID});
-      }
-    }
-  }
-  _getDefaultDisplayOfSlide( slideElement) {
-    const defaultDiaPo = slideElement.querySelector( "dia-po[default]");
-    return defaultDiaPo.getAttribute( "display");
-  }
   moveTo( slide, display) {
     console.debug( "dia-controller › moveTo()", slide, display);
     this.moveToSlide( slide);
@@ -849,13 +861,15 @@ class DiaController extends LitElement {
     console.debug( "dia-controller › toggleSpeaker()");
     if( !this.detached){
       this.__dispatchEvt( "speaker-toggled");
-      if(this.head.slide != this.liveHead.slide){this.resync();}
+      if( this.head.slide != this.liveHead.slide) {
+        this.resync();
+      }
     }
   }
   focus( _event) {
     console.debug( "dia-controller › focus()");
-    if(this.speaker && this.detached) {
-      this._remoteController.updateLiveHead(this.head);
+    if( this.speaker && this.detached) {
+      this._remoteController.updateLiveHead( this.head);
       this.__dispatchEvt( "detach-disabled");
     }
   }

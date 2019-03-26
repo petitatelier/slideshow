@@ -69,6 +69,8 @@ export class DiaShow extends LitElement {
     this.addEventListener( "detach-enabled", this._onDetachEnabled);
     this.addEventListener( "detach-disabled", this._onDetachDisabled);
     this.addEventListener( "fullscreen-enabled", this._onFullscreenEnabled);
+    this.addEventListener( "next-slide-requested", this.moveNext.bind( this));
+    this.addEventListener( "previous-slide-requested", this.movePrevious.bind( this));
 
     // Public observed properties
     this.speaker = false;
@@ -144,6 +146,98 @@ export class DiaShow extends LitElement {
       displays.add( element.getAttribute( "display"));
     });
     return displays;
+  }
+
+  __dispatchEvt( name, detail, bubbles = true, composed = true){
+    this.dispatchEvent(
+      new CustomEvent( name, { detail, bubbles, composed }));
+  }
+
+  // Searches for and returns the `id` attribute value of the child
+  // ‹dia-po› element of `slideElement`, that would have the `default`
+  // attribute; returns undefined, if there was none.
+  _getDefaultDiapoOfSlide( slideElement) {
+    const defaultDiaPo = slideElement.querySelector( "dia-po[default]")
+    return defaultDiaPo !== null
+      ? defaultDiaPo.getAttribute( "display")
+      : undefined;
+  }
+
+  _precedingSiblingSlide( slideId) {
+    // @see https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate
+    const xpathResult = document.evaluate(
+      `//dia-slide[@id="${slideId}"]/preceding-sibling::dia-slide[position()=1]`,
+      this, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+    return xpathResult.singleNodeValue; // returns null if no matching element
+  }
+
+  _followingSiblingSlide( slideId) {
+    // @see https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate
+    const xpathResult = document.evaluate(
+      `//dia-slide[@id="${slideId}"]/following-sibling::dia-slide[position()=1]`,
+      this, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+    return xpathResult.singleNodeValue; // returns null if no matching element
+  }
+
+  // Defines the next sibling slide as the current one. Modes:
+  //
+  // * When in speaker mode, keep the current display unchanged;
+  //   in non-speaker mode (audience), change the display as well,
+  //   to the display of the diapositive having the `default` attribute.
+  //
+  // eslint-disable-next-line no-unused-vars
+  moveNext( _event) {
+    console.debug( "dia-show › moveNext()");
+    if( typeof this.slide === "undefined") { return; }
+    // TODO: const slide = this.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[ 0];
+    const nextSlideElement = this._followingSiblingSlide( this.slide);
+    if( nextSlideElement !== null) {
+      const nextSlideID = nextSlideElement.getAttribute( "id");
+      this.__dispatchEvt( "slide-selected", { slide: nextSlideID });
+
+      // For users from audience (non-speakers), change display to show
+      // the diapositive being marked as the default one
+      const defaultDisplayID = this._getDefaultDiapoOfSlide( nextSlideElement);
+      if( !this.speaker && typeof defaultDisplayID !== "undefined") {
+        this.__dispatchEvt( "display-selected", { display: defaultDisplayID });
+      }
+
+      // TODO: Updates the live head of the audience using the speaker next slide and the defaultDisplayID
+      // if( this.speaker && !this.detached){
+      //   this._remoteController.updateLiveHead({ slide: nextSlideID, display: defaultDisplayID });
+      // }
+    }
+  }
+
+  // Defines the previous sibling slide as the current one. Modes:
+  //
+  // * When in speaker mode, keep the current display unchanged;
+  //   in non-speaker mode (audience), change the display as well,
+  //   to the display of the diapositive having the `default` attribute.
+  //
+  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-unused-vars
+  movePrevious( _event) {
+    console.debug( "dia-show › movePrevious()");
+    if( typeof this.slide == "undefined") { return; }
+    // TODO: var slide = this.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[ 0];
+    const prevSlideElement = this._precedingSiblingSlide( this.slide);
+    if( prevSlideElement !== null) {
+      const prevSlideID = prevSlideElement.getAttribute( "id");
+      this.__dispatchEvt( "slide-selected", { slide: prevSlideID });
+
+      // For users from audience (non-speakers), change display to show
+      // the diapositive being marked as the default one
+      const defaultDisplayID = this._getDefaultDiapoOfSlide( prevSlideElement);
+      if(!this.speaker && typeof defaultDisplayID !== "undefined") {
+        this.__dispatchEvt( "display-selected", { display: defaultDisplayID });
+      }
+
+      // Updates the live head of the audience using the speaker previous slide and the defaultDisplayID
+      // TODO: if(this.speaker && !this.detached){
+      //   this._remoteController.updateLiveHead({ slide: prevSlideID, display: defaultDisplayID });
+      // }
+    }
   }
 
   // Sets the active display when the custom event `display-selected` is fired from a child.

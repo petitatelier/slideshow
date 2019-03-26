@@ -5,7 +5,6 @@ import "./dia-controller-pointer.js";
 import "./dia-controller-remote-firebase.js";
 
 // TODO:
-// [ ] `_getDefaultDisplayOfSlide()` should handle case of no `default` diapositive on ‹dia-slide›
 // [ ] Login to google
 // [ ] Send the user current head to firebase
 // [ ] Detached head is not synched
@@ -57,8 +56,6 @@ export class DiaController extends LitElement {
 
     // Attach event listeners
     this.addEventListener( "live-head-updated", this._onLiveHeadUpdated.bind( this));
-    this.addEventListener( "next-slide-requested", this.next.bind( this));
-    this.addEventListener( "previous-slide-requested", this.previous.bind( this));
     this.addEventListener( "fullscreen-requested", this.fullscreen.bind( this));
     this.addEventListener( "speaker-toggle-requested", this.toggleSpeaker.bind( this));
     this.addEventListener( "detach-requested", this.detach.bind( this));
@@ -121,60 +118,6 @@ export class DiaController extends LitElement {
     }
   }
 
-  // Set the next slide as the current one.
-  // eslint-disable-next-line no-unused-vars
-  next( _event) {
-    console.debug( "dia-controller › next()");
-    if( this.target.slide == undefined) { return; }
-    const slide = this.target.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[0];
-    const nextSlide = slide.nextElementSibling;
-    if(nextSlide != null && nextSlide.tagName == "DIA-SLIDE"){
-      const nextSlideID = nextSlide.getAttribute( "id");
-      this.__dispatchEvt( "slide-selected", { slide: nextSlideID });
-      const defaultDisplayID = this._getDefaultDisplayOfSlide( nextSlide);
-
-      // Do not change the display if we are in speaker mode
-      if( !this.speaker) {
-        this.__dispatchEvt( "display-selected", { display: defaultDisplayID });
-      }
-
-      // Updates the live head of the audience using the speaker next slide and the defaultDisplayID
-      if( this.speaker && !this.detached){
-        this._remoteController.updateLiveHead({ slide: nextSlideID, display: defaultDisplayID });
-      }
-    }
-  }
-
-  // Set the previous slide as the current one.
-  // eslint-disable-next-line no-unused-vars
-  previous( _event) {
-    console.debug( "dia-controller › previous()");
-    if(this.target.slide == undefined) { return; }
-    var slide = this.target.querySelectorAll( `dia-slide[id="${this.head.slide}"]`)[0];
-    var prevSlide = slide.previousElementSibling;
-    if(prevSlide != null && prevSlide.tagName == "DIA-SLIDE"){
-      const prevSlideID = prevSlide.getAttribute("id");
-      this.__dispatchEvt("slide-selected", {slide: prevSlideID});
-      const defaultDisplayID = this._getDefaultDisplayOfSlide(prevSlide);
-
-      // Do not change the display if we are in speaker mode
-      if(!this.speaker) {
-        this.__dispatchEvt("display-selected", {display: defaultDisplayID});
-      }
-
-      // Updates the live head of the audience using the speaker previous slide and the defaultDisplayID
-      if(this.speaker && !this.detached){
-        this._remoteController.updateLiveHead({slide: prevSlideID, display: defaultDisplayID});
-      }
-    }
-  }
-
-  // Search for the dia-po that has the `default` attribute
-  _getDefaultDisplayOfSlide( slideElement) {
-    const defaultDiaPo = slideElement.querySelector( "dia-po[default]")
-    return defaultDiaPo.getAttribute( "display");
-  }
-
   // Move to the specified slide and/or display
   moveTo( slide, display) {
     console.debug( "dia-controller › moveTo()", slide, display);
@@ -233,15 +176,17 @@ export class DiaController extends LitElement {
     console.debug( "dia-controller › toggleSpeaker()");
     if( !this.detached){
       this.__dispatchEvt( "speaker-toggled");
-      if(this.head.slide != this.liveHead.slide){this.resync();}
+      if( this.head.slide != this.liveHead.slide) {
+        this.resync();
+      }
     }
   }
 
   // eslint-disable-next-line no-unused-vars
   focus( _event) {
     console.debug( "dia-controller › focus()");
-    if(this.speaker && this.detached) {
-      this._remoteController.updateLiveHead(this.head);
+    if( this.speaker && this.detached) {
+      this._remoteController.updateLiveHead( this.head);
       this.__dispatchEvt( "detach-disabled");
     }
   }
