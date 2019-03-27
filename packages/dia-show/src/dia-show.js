@@ -148,11 +148,6 @@ export class DiaShow extends LitElement {
     return displays;
   }
 
-  __dispatchEvt( name, detail, bubbles = true, composed = true){
-    this.dispatchEvent(
-      new CustomEvent( name, { detail, bubbles, composed }));
-  }
-
   // Searches for and returns the `id` attribute value of the child
   // ‹dia-po› element of `slideElement`, that would have the `default`
   // attribute; returns undefined, if there was none.
@@ -193,13 +188,13 @@ export class DiaShow extends LitElement {
     const nextSlideElement = this._followingSiblingSlide( this.slide);
     if( nextSlideElement !== null) {
       const nextSlideID = nextSlideElement.getAttribute( "id");
-      this.__dispatchEvt( "slide-selected", { slide: nextSlideID });
+      this.moveToSlide( nextSlideID);
 
       // For users from audience (non-speakers), change display to show
       // the diapositive being marked as the default one
       const defaultDisplayID = this._getDefaultDiapoOfSlide( nextSlideElement);
       if( !this.speaker && typeof defaultDisplayID !== "undefined") {
-        this.__dispatchEvt( "display-selected", { display: defaultDisplayID });
+        this.moveToDisplay( defaultDisplayID);
       }
 
       // TODO: Updates the live head of the audience using the speaker next slide and the defaultDisplayID
@@ -224,13 +219,13 @@ export class DiaShow extends LitElement {
     const prevSlideElement = this._precedingSiblingSlide( this.slide);
     if( prevSlideElement !== null) {
       const prevSlideID = prevSlideElement.getAttribute( "id");
-      this.__dispatchEvt( "slide-selected", { slide: prevSlideID });
+      this.moveToSlide( prevSlideID);
 
       // For users from audience (non-speakers), change display to show
       // the diapositive being marked as the default one
       const defaultDisplayID = this._getDefaultDiapoOfSlide( prevSlideElement);
       if(!this.speaker && typeof defaultDisplayID !== "undefined") {
-        this.__dispatchEvt( "display-selected", { display: defaultDisplayID });
+        this.moveToDisplay( defaultDisplayID);
       }
 
       // Updates the live head of the audience using the speaker previous slide and the defaultDisplayID
@@ -240,43 +235,62 @@ export class DiaShow extends LitElement {
     }
   }
 
+  // Move to the specified slide and/or display
+  moveTo( slide, display) {
+    console.debug( "dia-show › moveTo()", slide, display);
+    this.moveToSlide( slide);
+    this.moveToDisplay( display);
+  }
+
+  // Move to the specified slide
+  moveToSlide( slide) {
+    console.debug( "dia-show › moveToSlide()", slide);
+    this.slide = slide != undefined ? slide : null;
+  }
+
+  // Move to the specified display
+  moveToDisplay( display) {
+    console.debug( "dia-show › moveToDisplay()", display);
+    this.display = display != undefined ? display : null;
+  }
+
   // Sets the active display when the custom event `display-selected` is fired from a child.
-  _onDisplaySelected( e) {
-    const selectedDisplay = e.detail.display;
+  _onDisplaySelected( event) {
+    const selectedDisplay = event.detail.display;
     console.debug( `dia-show › on-display-selected: ${selectedDisplay}`);
-    this.display = selectedDisplay != undefined ? selectedDisplay : null;
-    e.stopPropagation();
+    this.moveToDisplay( selectedDisplay);
+    if( event.cancellable) { event.stopPropagation(); }
   }
 
   // Sets the active slide when the custom event `slide-selected` is fired from a child.
-  _onSlideSelected( e) {
-    const selectedSlide = e.detail.slide;
+  _onSlideSelected( event) {
+    const selectedSlide = event.detail.slide;
     console.debug( `dia-show › on-slide-selected: ${selectedSlide}`);
-    this.slide = selectedSlide != undefined ? selectedSlide : null;
-    e.stopPropagation();
+    this.moveToSlide( selectedSlide);
+    if( event.cancellable) { event.stopPropagation(); }
   }
 
   // Enables the speaker mode when the custom event `speaker-enabled` is fired from a child.
-  _onSpeakerToggled( e) {
+  _onSpeakerToggled( event) {
     this.speaker = !this.speaker;
-    e.stopPropagation();
+    if( event.cancellable) { event.stopPropagation(); }
   }
 
   // Enables the detached mode when the custom event `detach-enabled` is fired from a child.
-  _onDetachEnabled( e) {
+  _onDetachEnabled( event) {
     this.detached = true;
-    e.stopPropagation();
+    if( event.cancellable) { event.stopPropagation(); }
   }
 
   // Disables the detached mode when the custom event `detach-enabled` is fired from a child.
-  _onDetachDisabled( e) {
+  _onDetachDisabled( event) {
     this.detached = false;
-    e.stopPropagation();
+    if( event.cancellable) { event.stopPropagation(); }
   }
 
-  _onFullscreenEnabled( e) {
+  _onFullscreenEnabled( event) {
     this.fullscreen();
-    e.stopPropagation();
+    if( event.cancellable) { event.stopPropagation(); }
   }
 
   fullscreen(){

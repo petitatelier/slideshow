@@ -102,7 +102,7 @@ export class DiaController extends LitElement {
       //
       // Synchronize the deatched head with the current user active slide when
       // in detached mode.
-      if( this.detached){
+      if( this.detached) {
         this.detachedHead = this.head;
       }
     }
@@ -118,31 +118,13 @@ export class DiaController extends LitElement {
     }
   }
 
-  // Move to the specified slide and/or display
-  moveTo( slide, display) {
-    console.debug( "dia-controller › moveTo()", slide, display);
-    this.moveToSlide( slide);
-    this.moveToDisplay( display);
-  }
-
-  // Move to the specified slide
-  moveToSlide( slide) {
-    console.debug( "dia-controller › moveToSlide()", slide);
-    this.__dispatchEvt( "slide-selected", {slide: slide});
-  }
-
-  // Move to the specified display
-  moveToDisplay( display) {
-    console.debug( "dia-controller › moveToDisplay()", display);
-    this.__dispatchEvt( "display-selected", {display: display});
-  }
-
   // Detach from the head
   // eslint-disable-next-line no-unused-vars
   detach( _event) {
     console.debug( "dia-controller › detach()");
     if( this.detached) {
-      this.moveTo( null, null);
+      this.__dispatchEvt( "slide-selected", { slide: null });
+      this.__dispatchEvt( "display-selected", { display: null });
     } else {
       this.__dispatchEvt( "detach-enabled");
       this.detachedHead = this.head;
@@ -157,10 +139,11 @@ export class DiaController extends LitElement {
     if( this.speaker && this.liveHead.slide == this.head.slide) {
       this.next();
     } else {
-      if(this.speaker){
-        this.moveToSlide(this.liveHead.slide);
+      if( this.speaker){
+        this.__dispatchEvt( "slide-selected", { slide: this.liveHead.slide });
       } else {
-        this.moveTo(this.liveHead.slide, this.liveHead.display);
+        this.__dispatchEvt( "slide-selected", { slide: this.liveHead.slide });
+        this.__dispatchEvt( "display-selected", { display: this.liveHead.display });
       }
     }
   }
@@ -191,17 +174,18 @@ export class DiaController extends LitElement {
     }
   }
 
-  _onLiveHeadUpdated( e){
+  _onLiveHeadUpdated( event){
     const prevLiveHead = this.liveHead;
-    this.liveHead = e.detail.liveHead;
-    console.debug( "dia-controller › on-live-head-updated(): ", e.detail.liveHead);
+    this.liveHead = event.detail.liveHead;
+    console.debug( "dia-controller › on-live-head-updated(): ", this.liveHead);
     if( prevLiveHead == undefined){
       this.resync();
     } else if( !this.detached) {
-      if(this.speaker) {
-        this.moveToSlide( this.liveHead.slide);
+      if( this.speaker) {
+        this.__dispatchEvt( "slide-selected", { slide: this.liveHead.slide });
       } else {
-        this.moveTo( this.liveHead.slide, this.liveHead.display);
+        this.__dispatchEvt( "slide-selected", { slide: this.liveHead.slide });
+        this.__dispatchEvt( "display-selected", { display: this.liveHead.display });
       }
     }
   }
