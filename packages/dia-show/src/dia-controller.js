@@ -56,7 +56,6 @@ export class DiaController extends LitElement {
 
     // Attach event listeners
     this.addEventListener( "live-head-updated", this._onLiveHeadUpdated.bind( this));
-    this.addEventListener( "fullscreen-requested", this.fullscreen.bind( this));
     this.addEventListener( "speaker-toggle-requested", this.toggleSpeaker.bind( this));
     this.addEventListener( "detach-requested", this.detach.bind( this));
     this.addEventListener( "resync-requested", this.resync.bind( this));
@@ -146,12 +145,6 @@ export class DiaController extends LitElement {
         this.__dispatchEvt( "display-selected", { display: this.liveHead.display });
       }
     }
-  }
-
-  // eslint-disable-next-line no-unused-vars
-  fullscreen( _event) {
-    console.debug( "dia-controller › fullscreen()");
-    this.__dispatchEvt( "fullscreen-enabled");
   }
 
   // eslint-disable-next-line no-unused-vars

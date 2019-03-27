@@ -68,7 +68,7 @@ export class DiaShow extends LitElement {
     this.addEventListener( "speaker-toggled", this._onSpeakerToggled);
     this.addEventListener( "detach-enabled", this._onDetachEnabled);
     this.addEventListener( "detach-disabled", this._onDetachDisabled);
-    this.addEventListener( "fullscreen-enabled", this._onFullscreenEnabled);
+    this.addEventListener( "fullscreen-requested", this._onFullscreenRequested.bind( this));
     this.addEventListener( "next-slide-requested", this.moveNext.bind( this));
     this.addEventListener( "previous-slide-requested", this.movePrevious.bind( this));
 
@@ -120,7 +120,7 @@ export class DiaShow extends LitElement {
   // and the later will hide/reveal themselves.
   //
   // Also propagates the active display to the ‹dia-display-selector›
-  // child element, so that it correctly highlights the selected display
+  // child element, so that it correctly highlights the selected display.
   _updatedActiveDisplay() {
     const activeDisplayId = this.display != null ? this.display : undefined;
     console.log( `dia-show › Switch to display: ${activeDisplayId}`);
@@ -288,12 +288,12 @@ export class DiaShow extends LitElement {
     if( event.cancellable) { event.stopPropagation(); }
   }
 
-  _onFullscreenEnabled( event) {
+  _onFullscreenRequested( event) {
     this.fullscreen();
     if( event.cancellable) { event.stopPropagation(); }
   }
 
-  fullscreen(){
+  fullscreen() {
     this.requestFullscreen();
     this.focus();
   }
