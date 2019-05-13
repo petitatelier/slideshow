@@ -45,7 +45,7 @@ class DiaShow extends LitElement {
     this.addEventListener( "speaker-toggled", this._onSpeakerToggled);
     this.addEventListener( "detach-enabled", this._onDetachEnabled);
     this.addEventListener( "detach-disabled", this._onDetachDisabled);
-    this.addEventListener( "fullscreen-enabled", this._onFullscreenEnabled);
+    this.addEventListener( "fullscreen-requested", this._onFullscreenRequested.bind( this));
     this.addEventListener( "next-slide-requested", this.moveNext.bind( this));
     this.addEventListener( "previous-slide-requested", this.movePrevious.bind( this));
     this.speaker = false;
@@ -96,10 +96,6 @@ class DiaShow extends LitElement {
     });
     return displays;
   }
-  __dispatchEvt( name, detail, bubbles = true, composed = true){
-    this.dispatchEvent(
-      new CustomEvent( name, { detail, bubbles, composed }));
-  }
   _getDefaultDiapoOfSlide( slideElement) {
     const defaultDiaPo = slideElement.querySelector( "dia-po[default]");
     return defaultDiaPo !== null
@@ -124,10 +120,10 @@ class DiaShow extends LitElement {
     const nextSlideElement = this._followingSiblingSlide( this.slide);
     if( nextSlideElement !== null) {
       const nextSlideID = nextSlideElement.getAttribute( "id");
-      this.__dispatchEvt( "slide-selected", { slide: nextSlideID });
+      this.moveToSlide( nextSlideID);
       const defaultDisplayID = this._getDefaultDiapoOfSlide( nextSlideElement);
       if( !this.speaker && typeof defaultDisplayID !== "undefined") {
-        this.__dispatchEvt( "display-selected", { display: defaultDisplayID });
+        this.moveToDisplay( defaultDisplayID);
       }
     }
   }
@@ -137,42 +133,55 @@ class DiaShow extends LitElement {
     const prevSlideElement = this._precedingSiblingSlide( this.slide);
     if( prevSlideElement !== null) {
       const prevSlideID = prevSlideElement.getAttribute( "id");
-      this.__dispatchEvt( "slide-selected", { slide: prevSlideID });
+      this.moveToSlide( prevSlideID);
       const defaultDisplayID = this._getDefaultDiapoOfSlide( prevSlideElement);
       if(!this.speaker && typeof defaultDisplayID !== "undefined") {
-        this.__dispatchEvt( "display-selected", { display: defaultDisplayID });
+        this.moveToDisplay( defaultDisplayID);
       }
     }
   }
-  _onDisplaySelected( e) {
-    const selectedDisplay = e.detail.display;
+  moveTo( slide, display) {
+    console.debug( "dia-show › moveTo()", slide, display);
+    this.moveToSlide( slide);
+    this.moveToDisplay( display);
+  }
+  moveToSlide( slide) {
+    console.debug( "dia-show › moveToSlide()", slide);
+    this.slide = slide != undefined ? slide : null;
+  }
+  moveToDisplay( display) {
+    console.debug( "dia-show › moveToDisplay()", display);
+    this.display = display != undefined ? display : null;
+  }
+  _onDisplaySelected( event) {
+    const selectedDisplay = event.detail.display;
     console.debug( `dia-show › on-display-selected: ${selectedDisplay}`);
-    this.display = selectedDisplay != undefined ? selectedDisplay : null;
-    e.stopPropagation();
+    this.moveToDisplay( selectedDisplay);
+    if( event.cancellable) { event.stopPropagation(); }
   }
-  _onSlideSelected( e) {
-    const selectedSlide = e.detail.slide;
+  _onSlideSelected( event) {
+    const selectedSlide = event.detail.slide;
     console.debug( `dia-show › on-slide-selected: ${selectedSlide}`);
-    this.slide = selectedSlide != undefined ? selectedSlide : null;
-    e.stopPropagation();
+    this.moveToSlide( selectedSlide);
+    if( event.cancellable) { event.stopPropagation(); }
   }
-  _onSpeakerToggled( e) {
+  _onSpeakerToggled( event) {
     this.speaker = !this.speaker;
-    e.stopPropagation();
+    if( event.cancellable) { event.stopPropagation(); }
   }
-  _onDetachEnabled( e) {
+  _onDetachEnabled( event) {
     this.detached = true;
-    e.stopPropagation();
+    if( event.cancellable) { event.stopPropagation(); }
   }
-  _onDetachDisabled( e) {
+  _onDetachDisabled( event) {
     this.detached = false;
-    e.stopPropagation();
+    if( event.cancellable) { event.stopPropagation(); }
   }
-  _onFullscreenEnabled( e) {
+  _onFullscreenRequested( event) {
     this.fullscreen();
-    e.stopPropagation();
+    if( event.cancellable) { event.stopPropagation(); }
   }
-  fullscreen(){
+  fullscreen() {
     this.requestFullscreen();
     this.focus();
   }
@@ -771,7 +780,6 @@ class DiaController extends LitElement {
     this._pointerController = undefined;
     this._remoteController = undefined;
     this.addEventListener( "live-head-updated", this._onLiveHeadUpdated.bind( this));
-    this.addEventListener( "fullscreen-requested", this.fullscreen.bind( this));
     this.addEventListener( "speaker-toggle-requested", this.toggleSpeaker.bind( this));
     this.addEventListener( "detach-requested", this.detach.bind( this));
     this.addEventListener( "resync-requested", this.resync.bind( this));
@@ -803,7 +811,7 @@ class DiaController extends LitElement {
         && this.liveHead.slide != this.slide) {
         this.detach();
       }
-      if( this.detached){
+      if( this.detached) {
         this.detachedHead = this.head;
       }
     }
@@ -817,23 +825,11 @@ class DiaController extends LitElement {
       }
     }
   }
-  moveTo( slide, display) {
-    console.debug( "dia-controller › moveTo()", slide, display);
-    this.moveToSlide( slide);
-    this.moveToDisplay( display);
-  }
-  moveToSlide( slide) {
-    console.debug( "dia-controller › moveToSlide()", slide);
-    this.__dispatchEvt( "slide-selected", {slide: slide});
-  }
-  moveToDisplay( display) {
-    console.debug( "dia-controller › moveToDisplay()", display);
-    this.__dispatchEvt( "display-selected", {display: display});
-  }
   detach( _event) {
     console.debug( "dia-controller › detach()");
     if( this.detached) {
-      this.moveTo( null, null);
+      this.__dispatchEvt( "slide-selected", { slide: null });
+      this.__dispatchEvt( "display-selected", { display: null });
     } else {
       this.__dispatchEvt( "detach-enabled");
       this.detachedHead = this.head;
@@ -846,16 +842,13 @@ class DiaController extends LitElement {
     if( this.speaker && this.liveHead.slide == this.head.slide) {
       this.next();
     } else {
-      if(this.speaker){
-        this.moveToSlide(this.liveHead.slide);
+      if( this.speaker){
+        this.__dispatchEvt( "slide-selected", { slide: this.liveHead.slide });
       } else {
-        this.moveTo(this.liveHead.slide, this.liveHead.display);
+        this.__dispatchEvt( "slide-selected", { slide: this.liveHead.slide });
+        this.__dispatchEvt( "display-selected", { display: this.liveHead.display });
       }
     }
-  }
-  fullscreen( _event) {
-    console.debug( "dia-controller › fullscreen()");
-    this.__dispatchEvt( "fullscreen-enabled");
   }
   toggleSpeaker( _event) {
     console.debug( "dia-controller › toggleSpeaker()");
@@ -873,17 +866,18 @@ class DiaController extends LitElement {
       this.__dispatchEvt( "detach-disabled");
     }
   }
-  _onLiveHeadUpdated( e){
+  _onLiveHeadUpdated( event){
     const prevLiveHead = this.liveHead;
-    this.liveHead = e.detail.liveHead;
-    console.debug( "dia-controller › on-live-head-updated(): ", e.detail.liveHead);
+    this.liveHead = event.detail.liveHead;
+    console.debug( "dia-controller › on-live-head-updated(): ", this.liveHead);
     if( prevLiveHead == undefined){
       this.resync();
     } else if( !this.detached) {
-      if(this.speaker) {
-        this.moveToSlide( this.liveHead.slide);
+      if( this.speaker) {
+        this.__dispatchEvt( "slide-selected", { slide: this.liveHead.slide });
       } else {
-        this.moveTo( this.liveHead.slide, this.liveHead.display);
+        this.__dispatchEvt( "slide-selected", { slide: this.liveHead.slide });
+        this.__dispatchEvt( "display-selected", { display: this.liveHead.display });
       }
     }
   }
