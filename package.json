@@ -19,9 +19,11 @@
   },
   "devDependencies": {
     "@webcomponents/webcomponentsjs": "^2.2.10",
-    "browser-sync": "^2.26.5",
     "lerna": "^3.14.1",
     "polyserve": "^0.27.15"
+  },
+  "peerDependencies": {
+    "browser-sync": "^2.26.5"
   },
   "keywords": [
     "slideshow",
